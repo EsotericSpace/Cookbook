@@ -5,7 +5,6 @@ import RecipeCard from "../components/recipe/RecipeCard"
 import { Button } from "../components/ui/button"
 import { Checkbox } from "../components/ui/checkbox"
 import { Icon } from "../components/ui/icon"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
 import { getRecipes, getAllTags, createShoppingList, subscribe, getVersion } from "../lib/storage"
 import { useSession } from "../lib/auth"
 import { applySearchAndFilter } from "../lib/search"
@@ -129,27 +128,18 @@ export default function RecipeListPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <FilterSidebar
           allTags={allTags}
           tagCounts={tagCounts}
           activeFilters={activeFilters}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearAll}
+          sort={sort}
+          sortOptions={recipes.length > 0 ? SORT_OPTIONS : []}
+          onSortChange={handleSortChange}
         />
-        <div className="flex items-center gap-2 shrink-0">
-          {recipes.length > 0 && (
-            <Select value={sort} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-40 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SORT_OPTIONS.map(o => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
           {recipes.length > 0 && session && (
             <>
               {selectMode ? (

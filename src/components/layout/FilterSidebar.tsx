@@ -3,10 +3,15 @@ import { Checkbox } from "../ui/checkbox"
 import { Label } from "../ui/label"
 import { Badge } from "../ui/badge"
 import { Icon } from "../ui/icon"
-import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover"
+import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from "../ui/popover"
 import { cn } from "../../lib/utils"
 import { EFFORT_LEVELS } from "../../lib/types"
 import type { ActiveFilters } from "../../lib/types"
+
+interface SortOption {
+  value: string
+  label: string
+}
 
 interface FilterSidebarProps {
   allTags: Record<string, string[]>
@@ -14,6 +19,9 @@ interface FilterSidebarProps {
   activeFilters: ActiveFilters
   onFilterChange: (category: string, value: string, checked: boolean) => void
   onClearAll: () => void
+  sort: string
+  sortOptions: SortOption[]
+  onSortChange: (value: string) => void
 }
 
 const CATEGORY_ORDER = ["meal", "cuisine", "protein", "effort", "diet", "custom"]
@@ -32,12 +40,42 @@ export default function FilterSidebar({
   activeFilters,
   onFilterChange,
   onClearAll,
+  sort,
+  sortOptions,
+  onSortChange,
 }: FilterSidebarProps) {
   const hasActiveFilters = Object.values(activeFilters).some(v => v.length > 0)
   const visibleCategories = CATEGORY_ORDER.filter(cat => allTags[cat]?.length > 0)
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {sortOptions.length > 0 && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0 shrink-0">
+              <Icon name="sort" size="sm" className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="p-1 w-44" align="start">
+            {sortOptions.map(o => (
+              <PopoverClose key={o.value} asChild>
+                <button
+                  type="button"
+                  onClick={() => onSortChange(o.value)}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-muted",
+                    sort === o.value && "font-medium text-primary"
+                  )}
+                >
+                  {o.label}
+                  {sort === o.value && <Icon name="check" size="sm" />}
+                </button>
+              </PopoverClose>
+            ))}
+          </PopoverContent>
+        </Popover>
+      )}
+
       {visibleCategories.map(category => {
         const activeCount = activeFilters[category]?.length ?? 0
         return (
@@ -47,7 +85,7 @@ export default function FilterSidebar({
                 variant="outline"
                 size="sm"
                 className={cn(
-                  "gap-1.5 h-8",
+                  "gap-1.5 h-8 shrink-0",
                   activeCount > 0 && "border-primary text-primary"
                 )}
               >
@@ -92,7 +130,7 @@ export default function FilterSidebar({
           variant="ghost"
           size="sm"
           onClick={onClearAll}
-          className="h-8 gap-1 text-muted-foreground hover:text-foreground"
+          className="h-8 gap-1 shrink-0 text-muted-foreground hover:text-foreground"
         >
           <Icon name="close" size="sm" />
           Clear all
