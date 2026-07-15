@@ -22,7 +22,6 @@ import {
 } from "../ui/dropdown-menu"
 import RecipeForm from "./RecipeForm"
 import { cn } from "../../lib/utils"
-import { parseQuantity, formatMixedQuantity } from "../../lib/ingredient-merge"
 import type { Recipe, TagCategory } from "../../lib/types"
 import {
   getAllTags,
@@ -252,14 +251,15 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
             <section>
               <h2 className="text-xl font-semibold mb-3">Ingredients</h2>
               <ul className="space-y-2">
-                {recipe.ingredients.map((ing, i) => (
-                  <li key={i} className="flex gap-2 text-sm">
-                    <span className="font-medium shrink-0 text-muted-foreground">
-                      {formatMixedQuantity(parseQuantity(ing.quantity), ing.unit || null) || [ing.quantity, ing.unit].filter(Boolean).join(" ")}
-                    </span>
-                    <span>{ing.item}</span>
-                  </li>
-                ))}
+                {recipe.ingredients.map((ing, i) => {
+                  const qty = [ing.quantity, ing.unit].filter(Boolean).join(" ")
+                  return (
+                    <li key={i} className="text-sm">
+                      {qty && <span className="font-medium text-muted-foreground">{qty} </span>}
+                      {ing.item}
+                    </li>
+                  )
+                })}
               </ul>
             </section>
           )}

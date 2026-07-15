@@ -74,13 +74,44 @@ export default function RecipeCard({ recipe, onClick, disabled }: RecipeCardProp
         {/* Title */}
         <p
           ref={titleRef}
-          className="leading-snug whitespace-nowrap font-semibold text-primary"
+          className="leading-snug whitespace-nowrap font-semibold text-foreground"
           style={{ fontSize: titleFontSize }}
         >
           {recipe.title}
         </p>
 
         <div className="space-y-1.5">
+          {/* Icon metadata row */}
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            {recipe.prepTime && (
+              <span className="flex items-center gap-1">
+                <Icon name="restaurant" size="xs" />
+                <span className="flex items-center gap-2">
+                  Prep
+                  <span className="text-foreground font-medium">{prepMin != null ? formatTime(prepMin) : recipe.prepTime}</span>
+                </span>
+              </span>
+            )}
+            {recipe.cookTime && (
+              <span className="flex items-center gap-1">
+                <Icon name="local_fire_department" size="xs" />
+                <span className="flex items-center gap-2">
+                  Cook
+                  <span className="text-foreground font-medium">{cookMin != null ? formatTime(cookMin) : recipe.cookTime}</span>
+                </span>
+              </span>
+            )}
+            {recipe.servings && (
+              <span className="flex items-center gap-1">
+                <Icon name="group" size="xs" />
+                <span className="flex items-center gap-2">
+                  Serves
+                  <span className="text-foreground font-medium">{recipe.servings}</span>
+                </span>
+              </span>
+            )}
+          </div>
+
           {/* Tags */}
           {sortedTags.length > 0 && (
             <div className="flex flex-nowrap gap-1 overflow-hidden">
@@ -100,34 +131,6 @@ export default function RecipeCard({ recipe, onClick, disabled }: RecipeCardProp
               )}
             </div>
           )}
-
-          {/* Icon metadata row */}
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            {recipe.prepTime && (
-              <span className="flex items-center gap-0">
-                <Icon name="restaurant" size="xs" />
-                <span className="flex items-center gap-2">
-                  Prep
-                  <span className="text-primary font-medium">{prepMin != null ? formatTime(prepMin) : recipe.prepTime}</span>
-                </span>
-              </span>
-            )}
-            {recipe.cookTime && (
-              <span className="flex items-center gap-0">
-                <Icon name="local_fire_department" size="xs" />
-                <span className="flex items-center gap-2">
-                  Cook
-                  <span className="text-primary font-medium">{cookMin != null ? formatTime(cookMin) : recipe.cookTime}</span>
-                </span>
-              </span>
-            )}
-            {recipe.servings && (
-              <span className="flex items-center gap-0">
-                <Icon name="group" size="xs" />
-                <span className="text-primary font-medium">{recipe.servings}</span>
-              </span>
-            )}
-          </div>
         </div>
       </div>
     </div>
