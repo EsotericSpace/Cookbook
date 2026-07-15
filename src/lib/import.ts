@@ -185,8 +185,13 @@ function schemaToRecipe(s: Record<string, unknown>): Partial<Recipe> {
 }
 
 export async function importRecipeFromUrl(url: string): Promise<Partial<Recipe>> {
-  const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`
-  const res = await fetch(proxy)
+  // corsproxy.io's free tier only serves localhost/dev origins — in
+  // production, fetch server-side via our own function instead, which
+  // sidesteps CORS entirely since it's not a browser request.
+  const fetchUrl = import.meta.env.DEV
+    ? `https://corsproxy.io/?${encodeURIComponent(url)}`
+    : `/api/scrape?url=${encodeURIComponent(url)}`
+  const res = await fetch(fetchUrl)
   if (!res.ok) throw new Error(`Could not fetch URL (${res.status})`)
   const html = await res.text()
   const schema = extractSchema(html)
