@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.material-icons-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 200, "GRAD" 0, "opsz" 24;
+}
+
+@layer base {
+  :root {
+    --background: 30 20% 97%;
+    --foreground: 20 10% 15%;
+    --card: 30 15% 99%;
+    --card-foreground: 20 10% 15%;
+    --border: 25 15% 88%;
+    --input: 25 15% 88%;
+    --ring: 5 65% 48%;
+    --primary: 5 65% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 15% 92%;
+    --secondary-foreground: 20 10% 25%;
+    --muted: 30 10% 94%;
+    --muted-foreground: 20 8% 44%;
+    --accent: 5 65% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --radius: 0.5rem;
+
+    /* Meal-tag gradient stops (oklch, perceptually uniform blending) */
+    --grad-amber: oklch(96.7% 0.054 84.4);
+    --grad-teal: oklch(97.2% 0.036 179.0);
+    --grad-orange: oklch(96.7% 0.040 68.1);
+    --grad-purple: oklch(96.3% 0.040 308.1);
+    --grad-pink: oklch(95.8% 0.038 342.6);
+    --grad-blue: oklch(94.4% 0.037 243.2);
+    --grad-green: oklch(97.1% 0.044 152.3);
+    --grad-red: oklch(95.9% 0.038 16.4);
+    --grad-stone: oklch(96.5% 0.003 75.2);
+    --grad-cyan: oklch(97.4% 0.040 192.2);
+  }
+
+  .dark {
+    --background: 20 14% 8%;
+    --foreground: 30 15% 92%;
+    --card: 20 13% 11%;
+    --card-foreground: 30 15% 92%;
+    --border: 20 10% 20%;
+    --input: 20 10% 20%;
+    --ring: 5 55% 52%;
+    --primary: 5 55% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 10% 16%;
+    --secondary-foreground: 30 15% 85%;
+    --muted: 20 10% 15%;
+    --muted-foreground: 20 8% 60%;
+    --accent: 5 55% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Deeper, muted equivalents of the light gradient stops */
+    --grad-amber: oklch(30% 0.08 84.4);
+    --grad-teal: oklch(30% 0.06 179.0);
+    --grad-orange: oklch(30% 0.09 68.1);
+    --grad-purple: oklch(30% 0.09 308.1);
+    --grad-pink: oklch(30% 0.09 342.6);
+    --grad-blue: oklch(30% 0.08 243.2);
+    --grad-green: oklch(30% 0.08 152.3);
+    --grad-red: oklch(30% 0.10 16.4);
+    --grad-stone: oklch(28% 0.01 75.2);
+    --grad-cyan: oklch(30% 0.07 192.2);
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+}
