@@ -1,11 +1,10 @@
-import { useState, useSyncExternalStore } from "react"
+import { useSyncExternalStore } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import FilterSidebar from "../components/layout/FilterSidebar"
 import RecipeCard from "../components/recipe/RecipeCard"
 import { Button } from "../components/ui/button"
-import { Checkbox } from "../components/ui/checkbox"
 import { Icon } from "../components/ui/icon"
-import { getRecipes, getAllTags, createShoppingList, subscribe, getVersion } from "../lib/storage"
+import { getRecipes, getAllTags, subscribe, getVersion } from "../lib/storage"
 import { useSession } from "../lib/auth"
 import { applySearchAndFilter } from "../lib/search"
 import type { Recipe, ActiveFilters } from "../lib/types"
@@ -72,8 +71,6 @@ export default function RecipeListPage() {
   const allTags = useSyncExternalStore(subscribe, getAllTags)
   useSyncExternalStore(subscribe, getVersion) // re-render on any storage change, not just recipes/tags
   const session = useSession()
-  const [selectMode, setSelectMode] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const query = searchParams.get("q") ?? ""
   const sort = searchParams.get("sort") ?? "title-asc"
@@ -107,82 +104,22 @@ export default function RecipeListPage() {
     setSearchParams(params, { replace: true })
   }
 
-  function toggleSelect(id: string) {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  function handleCreateShoppingList() {
-    const name = `Shopping list — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
-    const newList = createShoppingList(name, [...selectedIds])
-    navigate(`/shopping/${newList.id}`)
-  }
-
   const filtered = applySearchAndFilter(recipes, query, activeFilters)
   const displayed = sortRecipes(filtered, sort)
   const tagCounts = computeTagCounts(recipes)
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <FilterSidebar
-          allTags={allTags}
-          tagCounts={tagCounts}
-          activeFilters={activeFilters}
-          onFilterChange={handleFilterChange}
-          onClearAll={handleClearAll}
-          sort={sort}
-          sortOptions={recipes.length > 0 ? SORT_OPTIONS : []}
-          onSortChange={handleSortChange}
-        />
-        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
-          {recipes.length > 0 && session && (
-            <>
-              {selectMode ? (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={() => { setSelectMode(false); setSelectedIds(new Set()) }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="gap-1.5 shrink-0"
-                    disabled={selectedIds.size === 0}
-                    onClick={handleCreateShoppingList}
-                  >
-                    Create shopping list
-                    {selectedIds.size > 0 && (
-                      <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-primary-foreground/20 px-1.5 text-xs font-medium">
-                        {selectedIds.size}
-                      </span>
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => setSelectMode(true)}
-                >
-                  Create Shopping List
-                </Button>
-              )}
-              <Button size="sm" className="shrink-0" onClick={() => navigate("/add")}>
-                Add Recipe
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
+      <FilterSidebar
+        allTags={allTags}
+        tagCounts={tagCounts}
+        activeFilters={activeFilters}
+        onFilterChange={handleFilterChange}
+        onClearAll={handleClearAll}
+        sort={sort}
+        sortOptions={recipes.length > 0 ? SORT_OPTIONS : []}
+        onSortChange={handleSortChange}
+      />
 
       <div>
         {recipes.length > 0 && (
@@ -215,25 +152,11 @@ export default function RecipeListPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {displayed.map(recipe => (
-              <div key={recipe.id} className="relative">
-                {selectMode && (
-                  <div
-                    className="absolute top-2 right-2 z-10"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <Checkbox
-                      checked={selectedIds.has(recipe.id)}
-                      onCheckedChange={() => toggleSelect(recipe.id)}
-                      className="bg-background shadow"
-                    />
-                  </div>
-                )}
-                <RecipeCard
-                  recipe={recipe}
-                  onClick={() => navigate(`/recipe/${recipe.id}`)}
-                  disabled={selectMode}
-                />
-              </div>
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                onClick={() => navigate(`/recipe/${recipe.id}`)}
+              />
             ))}
           </div>
         )}

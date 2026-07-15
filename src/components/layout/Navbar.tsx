@@ -3,14 +3,21 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { Icon } from "../ui/icon"
-import { useTheme } from "../../lib/theme"
-import AuthControl from "./AuthControl"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../ui/dropdown-menu"
+import { useSession } from "../../lib/auth"
+import { createShoppingList } from "../../lib/storage"
+import SettingsMenu from "./SettingsMenu"
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const session = useSession()
   const [searchParams, setSearchParams] = useSearchParams()
   const [inputValue, setInputValue] = useState(searchParams.get("q") ?? "")
-  const { theme, toggleTheme } = useTheme()
 
   // Debounce search input -> URL param
   useEffect(() => {
@@ -30,6 +37,12 @@ export default function Navbar() {
   useEffect(() => {
     setInputValue(searchParams.get("q") ?? "")
   }, [searchParams.get("q")])
+
+  function handleNewShoppingList() {
+    const name = `Shopping list — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+    const newList = createShoppingList(name, [])
+    navigate(`/shopping/${newList.id}`)
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
@@ -53,15 +66,24 @@ export default function Navbar() {
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <Icon name="light_mode" size="lg" /> : <Icon name="dark_mode" size="lg" />}
-          </Button>
-          <AuthControl />
+          {session && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Add">
+                  <Icon name="add" size="lg" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate("/add")}>
+                  Recipe
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleNewShoppingList}>
+                  Shopping list
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <SettingsMenu />
         </div>
       </div>
     </header>

@@ -10,7 +10,6 @@ import type { Recipe } from "../../lib/types"
 interface RecipeCardProps {
   recipe: Recipe
   onClick: () => void
-  disabled?: boolean
 }
 
 const MAX_VISIBLE_TAGS = 4
@@ -19,7 +18,7 @@ const MAX_VISIBLE_TAGS = 4
 // effort, then custom tags last.
 const TAG_CATEGORY_ORDER: Record<string, number> = { meal: 0, diet: 1, cuisine: 2, protein: 3, effort: 4, custom: 5 }
 
-export default function RecipeCard({ recipe, onClick, disabled }: RecipeCardProps) {
+export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
   const [imageError, setImageError] = useState(false)
   const showImage = !!recipe.imageUrl && !imageError
 
@@ -47,10 +46,9 @@ export default function RecipeCard({ recipe, onClick, disabled }: RecipeCardProp
     <div
       className={cn(
         "rounded-xl border overflow-hidden bg-card shadow-[0_8px_20px_-6px_rgba(0,0,0,0.12)] transition-shadow",
-        "aspect-square grid grid-rows-[3fr_1fr]",
-        disabled ? "cursor-default" : "cursor-pointer hover:shadow-[0_12px_28px_-8px_rgba(0,0,0,0.18)]"
+        "aspect-square grid grid-rows-[3fr_1fr] cursor-pointer hover:shadow-[0_12px_28px_-8px_rgba(0,0,0,0.18)]"
       )}
-      onClick={disabled ? undefined : onClick}
+      onClick={onClick}
     >
       {/* Header band: photo (if available) or colored gradient — 3/4 of the card */}
       <div className="relative overflow-hidden min-h-0">
