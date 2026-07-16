@@ -4,7 +4,7 @@ export interface Ingredient {
   unit: string
 }
 
-export type TagCategory = "cuisine" | "protein" | "meal" | "effort" | "diet" | "custom"
+export type TagCategory = "cuisine" | "protein" | "meal" | "dishType" | "effort" | "diet" | "custom"
 
 export const EFFORT_LEVELS = ["Easy", "Medium", "Difficult"] as const
 
@@ -12,6 +12,11 @@ export const EFFORT_LEVELS = ["Easy", "Medium", "Difficult"] as const
 // letting it grow open-ended (see MEAL_OCCASIONS usage in import.ts, which
 // filters out noisy scraped values like "Main Course" that don't map here).
 export const MEAL_OCCASIONS = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack"] as const
+
+// "meal" is occasion only (when you'd eat it); "dishType" is format (what
+// it is) — split out so meal doesn't keep absorbing things like "Salad" or
+// "One-pan" that aren't actually occasions.
+export const DISH_TYPES = ["Salad", "Soup", "Pasta", "One-pan"] as const
 
 export interface Tag {
   category: TagCategory

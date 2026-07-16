@@ -24,9 +24,10 @@ interface FilterSidebarProps {
   onSortChange: (value: string) => void
 }
 
-const CATEGORY_ORDER = ["meal", "cuisine", "protein", "effort", "diet", "custom"]
+const CATEGORY_ORDER = ["meal", "dishType", "cuisine", "protein", "effort", "diet", "custom"]
 const CATEGORY_LABELS: Record<string, string> = {
   meal: "Meal",
+  dishType: "Dish Type",
   cuisine: "Cuisine",
   protein: "Protein",
   effort: "Effort",

@@ -45,12 +45,13 @@ export function mealGradientStyle(colorKeys: string[]): React.CSSProperties | un
 // ---------------------------------------------------------------------------
 
 const TAG_BADGE_COLORS: Record<TagCategory, string> = {
-  meal:    "bg-amber-100  text-amber-800  border-amber-200  dark:bg-amber-950/40  dark:text-amber-300  dark:border-amber-800/60",
-  cuisine: "bg-teal-100   text-teal-800   border-teal-200   dark:bg-teal-950/40   dark:text-teal-300   dark:border-teal-800/60",
-  protein: "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800/60",
-  effort:  "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60",
-  diet:    "bg-green-100  text-green-800  border-green-200  dark:bg-green-950/40  dark:text-green-300  dark:border-green-800/60",
-  custom:  "bg-gray-100   text-gray-700   border-gray-200   dark:bg-gray-800/60   dark:text-gray-300   dark:border-gray-700",
+  meal:     "bg-amber-100  text-amber-800  border-amber-200  dark:bg-amber-950/40  dark:text-amber-300  dark:border-amber-800/60",
+  dishType: "bg-blue-100   text-blue-800   border-blue-200   dark:bg-blue-950/40   dark:text-blue-300   dark:border-blue-800/60",
+  cuisine:  "bg-teal-100   text-teal-800   border-teal-200   dark:bg-teal-950/40   dark:text-teal-300   dark:border-teal-800/60",
+  protein:  "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800/60",
+  effort:   "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60",
+  diet:     "bg-green-100  text-green-800  border-green-200  dark:bg-green-950/40  dark:text-green-300  dark:border-green-800/60",
+  custom:   "bg-gray-100   text-gray-700   border-gray-200   dark:bg-gray-800/60   dark:text-gray-300   dark:border-gray-700",
 }
 
 export function tagCategoryColor(category: string): string {

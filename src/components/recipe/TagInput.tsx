@@ -6,7 +6,7 @@ import { ColorPicker } from "../ui/ColorPicker"
 import { getTagRegistry, registerTag, getTagColor } from "../../lib/storage"
 import { COLOR_PALETTE } from "../../lib/colors"
 import { toTitleCase } from "../../lib/utils"
-import { EFFORT_LEVELS } from "../../lib/types"
+import { EFFORT_LEVELS, DISH_TYPES } from "../../lib/types"
 import type { Tag, TagCategory } from "../../lib/types"
 
 interface TagInputProps {
@@ -16,12 +16,13 @@ interface TagInputProps {
 }
 
 const TAG_CATEGORIES: { key: TagCategory; label: string }[] = [
-  { key: "meal",    label: "Meal Type"    },
-  { key: "cuisine", label: "Cuisine"      },
-  { key: "protein", label: "Protein"      },
-  { key: "effort",  label: "Effort Level" },
-  { key: "diet",    label: "Diet"         },
-  { key: "custom",  label: "Custom Tags"  },
+  { key: "meal",     label: "Meal Type"    },
+  { key: "dishType", label: "Dish Type"    },
+  { key: "cuisine",  label: "Cuisine"      },
+  { key: "protein",  label: "Protein"      },
+  { key: "effort",   label: "Effort Level" },
+  { key: "diet",     label: "Diet"         },
+  { key: "custom",   label: "Custom Tags"  },
 ]
 
 export default function TagInput({ tags, onChange, existingTags }: TagInputProps) {
@@ -98,6 +99,13 @@ export default function TagInput({ tags, onChange, existingTags }: TagInputProps
                 ))}
               </SelectContent>
             </Select>
+          ) : key === "dishType" ? (
+            <Combobox
+              options={[...DISH_TYPES]}
+              value={getValuesForCategory("dishType")}
+              onChange={values => handleCategoryChange("dishType", values)}
+              placeholder="Add dish type..."
+            />
           ) : (
             <Combobox
               options={existingTags[key] ?? []}
