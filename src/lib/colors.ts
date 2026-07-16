@@ -51,11 +51,14 @@ const TAG_BADGE_COLORS: Record<TagCategory, string> = {
   protein:  "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800/60",
   effort:   "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60",
   diet:     "bg-green-100  text-green-800  border-green-200  dark:bg-green-950/40  dark:text-green-300  dark:border-green-800/60",
-  custom:   "bg-gray-100   text-gray-700   border-gray-200   dark:bg-gray-800/60   dark:text-gray-300   dark:border-gray-700",
 }
 
+// Fallback for any tag category not in the fixed set above (e.g. stale data
+// from before "custom" was removed as a category).
+const DEFAULT_BADGE_COLOR = "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800/60 dark:text-gray-300 dark:border-gray-700"
+
 export function tagCategoryColor(category: string): string {
-  return TAG_BADGE_COLORS[category as TagCategory] ?? TAG_BADGE_COLORS.custom
+  return TAG_BADGE_COLORS[category as TagCategory] ?? DEFAULT_BADGE_COLOR
 }
 
 // ---------------------------------------------------------------------------

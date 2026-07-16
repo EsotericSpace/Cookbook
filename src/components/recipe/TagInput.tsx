@@ -22,7 +22,6 @@ const TAG_CATEGORIES: { key: TagCategory; label: string }[] = [
   { key: "protein",  label: "Protein"      },
   { key: "effort",   label: "Effort Level" },
   { key: "diet",     label: "Diet"         },
-  { key: "custom",   label: "Custom Tags"  },
 ]
 
 export default function TagInput({ tags, onChange, existingTags }: TagInputProps) {

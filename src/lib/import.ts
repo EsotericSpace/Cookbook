@@ -176,7 +176,6 @@ function schemaToRecipe(s: Record<string, unknown>): Partial<Recipe> {
     const matched = MEAL_OCCASIONS.find(o => o.toLowerCase() === raw.toLowerCase())
     if (matched) addTag("meal", matched)
   })
-  toArr(s.keywords).slice(0, 3).forEach((k: unknown) => addTag("custom", k))
 
   return {
     title: (s.name as string) ?? "",

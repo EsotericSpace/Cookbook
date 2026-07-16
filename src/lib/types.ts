@@ -4,7 +4,7 @@ export interface Ingredient {
   unit: string
 }
 
-export type TagCategory = "cuisine" | "protein" | "meal" | "dishType" | "effort" | "diet" | "custom"
+export type TagCategory = "cuisine" | "protein" | "meal" | "dishType" | "effort" | "diet"
 
 export const EFFORT_LEVELS = ["Easy", "Medium", "Difficult"] as const
 

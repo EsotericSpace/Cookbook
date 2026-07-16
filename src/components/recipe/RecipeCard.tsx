@@ -16,7 +16,7 @@ const MAX_VISIBLE_TAGS = 4
 
 // Meal type always leads the tag row, followed by diet, cuisine, protein,
 // effort, then custom tags last.
-const TAG_CATEGORY_ORDER: Record<string, number> = { meal: 0, dishType: 1, diet: 2, cuisine: 3, protein: 4, effort: 5, custom: 6 }
+const TAG_CATEGORY_ORDER: Record<string, number> = { meal: 0, dishType: 1, diet: 2, cuisine: 3, protein: 4, effort: 5 }
 
 export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
   const [imageError, setImageError] = useState(false)

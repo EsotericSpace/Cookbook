@@ -39,7 +39,7 @@ interface RecipeDetailProps {
   onBack: () => void
 }
 
-const TAG_CATEGORY_ORDER: TagCategory[] = ["meal", "cuisine", "protein", "effort", "diet", "custom"]
+const TAG_CATEGORY_ORDER: TagCategory[] = ["meal", "dishType", "cuisine", "protein", "effort", "diet"]
 
 // Accepts a full URL ("https://example.com/..."), a protocol-relative URL
 // ("//example.com/...", common in scraped JSON-LD), or a bare domain
