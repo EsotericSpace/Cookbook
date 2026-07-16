@@ -28,6 +28,7 @@ import {
   getShoppingLists,
   createShoppingList,
   addRecipeToShoppingList,
+  isCurrentUserAdmin,
 } from "../../lib/storage"
 import { useSession } from "../../lib/auth"
 
@@ -54,7 +55,7 @@ function sourceUrl(source: string): string | null {
 export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: RecipeDetailProps) {
   const navigate = useNavigate()
   const session = useSession()
-  const isOwner = session?.user.id === recipe.userId
+  const isOwner = session?.user.id === recipe.userId || isCurrentUserAdmin()
   const [editing, setEditing] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [imageError, setImageError] = useState(false)

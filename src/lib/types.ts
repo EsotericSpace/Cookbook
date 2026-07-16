@@ -62,4 +62,5 @@ export interface TagRegistryEntry {
 export interface Profile {
   id: string
   displayName: string
+  isAdmin: boolean
 }

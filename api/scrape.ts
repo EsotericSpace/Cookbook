@@ -1,4 +1,15 @@
-export default async function handler(req: any, res: any) {
+interface ScrapeRequest {
+  query: Record<string, string | string[] | undefined>
+}
+
+interface ScrapeResponse {
+  status(code: number): ScrapeResponse
+  json(body: unknown): void
+  send(body: string): void
+  setHeader(name: string, value: string): void
+}
+
+export default async function handler(req: ScrapeRequest, res: ScrapeResponse) {
   const { url } = req.query
   if (!url || typeof url !== "string") {
     res.status(400).json({ error: "Missing url parameter" })

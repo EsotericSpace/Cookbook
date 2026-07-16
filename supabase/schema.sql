@@ -1,3 +1,107 @@
+-- ---------------------------------------------------------------------------
+-- profiles (public display name, separate from the private auth email).
+-- Set up first — recipes/tag_registry policies below reference
+-- public.is_admin(), which reads this table, and Postgres parses/validates
+-- "language sql" function bodies against the catalog at CREATE FUNCTION
+-- time (unlike plpgsql), so the column has to exist before that function
+-- is defined.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  display_name text not null,
+  is_admin boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.profiles add column if not exists is_admin boolean not null default false;
+
+alter table public.profiles enable row level security;
+
+drop policy if exists "profiles are viewable by everyone" on public.profiles;
+create policy "profiles are viewable by everyone"
+  on public.profiles for select
+  to public
+  using (true);
+
+-- The app upserts on first sign-in as a fallback for the trigger below
+-- (which only fires for brand-new signups, not accounts that already
+-- existed before this table did), so insert needs to be allowed too, not
+-- just update.
+drop policy if exists "users can insert their own profile" on public.profiles;
+create policy "users can insert their own profile"
+  on public.profiles for insert
+  to authenticated
+  with check (auth.uid() = id);
+
+drop policy if exists "users can update their own profile" on public.profiles;
+create policy "users can update their own profile"
+  on public.profiles for update
+  to authenticated
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer set search_path = public
+as $$
+  select coalesce((select is_admin from public.profiles where id = auth.uid()), false);
+$$;
+
+-- RLS above is row-level only — "auth.uid() = id" would otherwise let anyone
+-- flip their own is_admin to true via a direct client call. Block that: an
+-- authenticated request (auth.uid() is not null) can only change is_admin if
+-- it's already coming from an admin. A null auth.uid() means the request
+-- came from the SQL editor or the service_role key, not a user session —
+-- already-trusted access, so it's exempt (this is what lets you grant the
+-- very first admin before any admin exists to grant it).
+create or replace function public.protect_is_admin()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if tg_op = 'INSERT' then
+    if new.is_admin and auth.uid() is not null and not public.is_admin() then
+      new.is_admin := false;
+    end if;
+  elsif tg_op = 'UPDATE' then
+    if new.is_admin is distinct from old.is_admin and auth.uid() is not null and not public.is_admin() then
+      new.is_admin := old.is_admin;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_is_admin_trigger on public.profiles;
+create trigger protect_is_admin_trigger
+  before insert or update on public.profiles
+  for each row execute function public.protect_is_admin();
+
+-- Auto-create a profile (default name = the part of the email before "@")
+-- whenever someone signs up, so display_name is never missing for new users.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, display_name)
+  values (new.id, split_part(new.email, '@', 1))
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
 create table if not exists public.recipes (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) default auth.uid(),
@@ -33,14 +137,14 @@ drop policy if exists "users can update their own recipes" on public.recipes;
 create policy "users can update their own recipes"
   on public.recipes for update
   to authenticated
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  using (auth.uid() = user_id or public.is_admin())
+  with check (auth.uid() = user_id or public.is_admin());
 
 drop policy if exists "users can delete their own recipes" on public.recipes;
 create policy "users can delete their own recipes"
   on public.recipes for delete
   to authenticated
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id or public.is_admin());
 
 create table if not exists public.shopping_lists (
   id uuid primary key default gen_random_uuid(),
@@ -91,70 +195,14 @@ drop policy if exists "authors can update their own tag colors" on public.tag_re
 create policy "authors can update their own tag colors"
   on public.tag_registry for update
   to authenticated
-  using (auth.uid() = created_by)
-  with check (auth.uid() = created_by);
+  using (auth.uid() = created_by or public.is_admin())
+  with check (auth.uid() = created_by or public.is_admin());
 
 drop policy if exists "authors can delete their own tags" on public.tag_registry;
 create policy "authors can delete their own tags"
   on public.tag_registry for delete
   to authenticated
-  using (auth.uid() = created_by);
-
--- ---------------------------------------------------------------------------
--- profiles (public display name, separate from the private auth email)
--- ---------------------------------------------------------------------------
-
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  display_name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-alter table public.profiles enable row level security;
-
-drop policy if exists "profiles are viewable by everyone" on public.profiles;
-create policy "profiles are viewable by everyone"
-  on public.profiles for select
-  to public
-  using (true);
-
--- The app upserts on first sign-in as a fallback for the trigger below
--- (which only fires for brand-new signups, not accounts that already
--- existed before this table did), so insert needs to be allowed too, not
--- just update.
-drop policy if exists "users can insert their own profile" on public.profiles;
-create policy "users can insert their own profile"
-  on public.profiles for insert
-  to authenticated
-  with check (auth.uid() = id);
-
-drop policy if exists "users can update their own profile" on public.profiles;
-create policy "users can update their own profile"
-  on public.profiles for update
-  to authenticated
-  using (auth.uid() = id)
-  with check (auth.uid() = id);
-
--- Auto-create a profile (default name = the part of the email before "@")
--- whenever someone signs up, so display_name is never missing for new users.
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer set search_path = public
-as $$
-begin
-  insert into public.profiles (id, display_name)
-  values (new.id, split_part(new.email, '@', 1))
-  on conflict (id) do nothing;
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
+  using (auth.uid() = created_by or public.is_admin());
 
 -- ---------------------------------------------------------------------------
 -- Realtime: enable change broadcasts for the live multi-user cache.

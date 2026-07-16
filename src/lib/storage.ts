@@ -179,14 +179,15 @@ function toTagRow(entry: TagRegistryEntry): TagRegistryRow {
 interface ProfileRow {
   id: string
   display_name: string
+  is_admin: boolean
 }
 
 function fromProfileRow(row: ProfileRow): Profile {
-  return { id: row.id, displayName: row.display_name }
+  return { id: row.id, displayName: row.display_name, isAdmin: row.is_admin }
 }
 
 function toProfileRow(profile: Profile): ProfileRow {
-  return { id: profile.id, display_name: profile.displayName }
+  return { id: profile.id, display_name: profile.displayName, is_admin: profile.isAdmin }
 }
 
 // ---------------------------------------------------------------------------
@@ -254,7 +255,7 @@ async function ensureProfileExists(): Promise<void> {
   const userId = getCurrentUserId()
   if (!userId || profilesCache.some(p => p.id === userId)) return
   const email = getCurrentUserEmail()
-  const profile: Profile = { id: userId, displayName: email?.split("@")[0] ?? "cook" }
+  const profile: Profile = { id: userId, displayName: email?.split("@")[0] ?? "cook", isAdmin: false }
   profilesCache = [...profilesCache, profile]
   notify()
   const { error } = await supabase.from("profiles").upsert(toProfileRow(profile))
@@ -627,13 +628,18 @@ export function getDisplayName(userId: string): string | null {
   return profilesCache.find(p => p.id === userId)?.displayName ?? null
 }
 
+export function isCurrentUserAdmin(): boolean {
+  const userId = getCurrentUserId()
+  return profilesCache.find(p => p.id === userId)?.isAdmin ?? false
+}
+
 export function updateDisplayName(name: string): void {
   const userId = getCurrentUserId()
   if (!userId) return
   const trimmed = name.trim()
   if (!trimmed) return
   const existing = profilesCache.find(p => p.id === userId)
-  const updated: Profile = { id: userId, displayName: trimmed }
+  const updated: Profile = { id: userId, displayName: trimmed, isAdmin: existing?.isAdmin ?? false }
   const previous = profilesCache
   profilesCache = existing ? profilesCache.map(p => p.id === userId ? updated : p) : [...profilesCache, updated]
   notify()
