@@ -1,6 +1,6 @@
 import { toast } from "sonner"
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js"
-import type { Recipe, TagRegistryEntry, ShoppingList, ShoppingListItem, Ingredient, Tag, Profile } from "./types"
+import type { Recipe, TagRegistryEntry, ShoppingList, ShoppingListItem, Ingredient, IngredientSection, StepSection, Tag, Profile } from "./types"
 import { mergeIngredients } from "./ingredient-merge"
 import { assignAisle } from "./aisle-map"
 import { supabase } from "./supabaseClient"
@@ -80,12 +80,41 @@ interface RecipeRow {
   cook_time: string | null
   servings: number | null
   image_url: string | null
-  ingredients: Ingredient[]
-  steps: string[]
+  // Older rows still hold the pre-sections flat shape (Ingredient[] /
+  // string[]) — normalized to IngredientSection[]/StepSection[] on read,
+  // see normalizeIngredientSections/normalizeStepSections below.
+  ingredients: unknown
+  steps: unknown
   tags: Tag[]
   notes: string | null
   created_at: string
   updated_at: string
+}
+
+// Wraps a legacy flat Ingredient[] row into a single implicit untitled
+// section; passes through rows already in the new sectioned shape.
+function normalizeIngredientSections(raw: unknown): IngredientSection[] {
+  if (!Array.isArray(raw) || raw.length === 0) return []
+  const first = raw[0] as Record<string, unknown>
+  if (first && typeof first === "object" && Array.isArray(first.items)) {
+    return raw as IngredientSection[]
+  }
+  if (first && typeof first === "object" && typeof first.item === "string") {
+    return [{ items: raw as Ingredient[] }]
+  }
+  console.error("Unrecognized ingredients shape, treating as a single section", raw)
+  return [{ items: raw as Ingredient[] }]
+}
+
+// Same idea as normalizeIngredientSections, but for steps (legacy shape is
+// string[] rather than an array of objects).
+function normalizeStepSections(raw: unknown): StepSection[] {
+  if (!Array.isArray(raw) || raw.length === 0) return []
+  const first = raw[0]
+  if (typeof first === "string") return [{ items: raw as string[] }]
+  if (first && typeof first === "object") return raw as StepSection[]
+  console.error("Unrecognized steps shape, treating as a single section", raw)
+  return [{ items: raw as string[] }]
 }
 
 function fromRecipeRow(row: RecipeRow): Recipe {
@@ -98,8 +127,8 @@ function fromRecipeRow(row: RecipeRow): Recipe {
     cookTime: row.cook_time ?? undefined,
     servings: row.servings ?? undefined,
     imageUrl: row.image_url ?? undefined,
-    ingredients: row.ingredients,
-    steps: row.steps,
+    ingredients: normalizeIngredientSections(row.ingredients),
+    steps: normalizeStepSections(row.steps),
     tags: row.tags,
     notes: row.notes ?? undefined,
     createdAt: row.created_at,
@@ -201,16 +230,30 @@ function isIngredient(v: unknown): v is Ingredient {
   return !!i && typeof i === "object" && typeof i.item === "string" && typeof i.quantity === "string" && typeof i.unit === "string"
 }
 
+function hasOptionalStringTitle(v: { title?: unknown }): boolean {
+  return v.title === undefined || typeof v.title === "string"
+}
+
+function isIngredientSection(v: unknown): v is IngredientSection {
+  const s = v as IngredientSection
+  return !!s && typeof s === "object" && Array.isArray(s.items) && s.items.every(isIngredient) && hasOptionalStringTitle(s)
+}
+
+function isStepSection(v: unknown): v is StepSection {
+  const s = v as StepSection
+  return !!s && typeof s === "object" && Array.isArray(s.items) && s.items.every(i => typeof i === "string") && hasOptionalStringTitle(s)
+}
+
 function isTag(v: unknown): v is Tag {
   const t = v as Tag
   return !!t && typeof t === "object" && typeof t.category === "string" && typeof t.value === "string"
 }
 
 function validateRecipeShape(recipe: Recipe): void {
-  if (!Array.isArray(recipe.ingredients) || !recipe.ingredients.every(isIngredient)) {
+  if (!Array.isArray(recipe.ingredients) || !recipe.ingredients.every(isIngredientSection)) {
     throw new Error("Recipe has invalid ingredients")
   }
-  if (!Array.isArray(recipe.steps) || !recipe.steps.every(s => typeof s === "string")) {
+  if (!Array.isArray(recipe.steps) || !recipe.steps.every(isStepSection)) {
     throw new Error("Recipe has invalid steps")
   }
   if (!Array.isArray(recipe.tags) || !recipe.tags.every(isTag)) {
@@ -502,7 +545,7 @@ export function createShoppingList(name: string, recipeIds: string[]): ShoppingL
   if (!userId) throw new Error("Must be signed in to create a shopping list")
   const ingredientSets = recipeIds.map(id => ({
     recipeId: id,
-    ingredients: recipesById.get(id)?.ingredients ?? [],
+    ingredients: (recipesById.get(id)?.ingredients ?? []).flatMap(sec => sec.items),
   }))
   const items = mergeIngredients(ingredientSets)
   const now = new Date().toISOString()
@@ -528,7 +571,7 @@ export function addRecipeToShoppingList(listId: string, recipeId: string): void 
   const allRecipeIds = [...list.sourceRecipeIds, recipeId]
   const ingredientSets = allRecipeIds.map(id => ({
     recipeId: id,
-    ingredients: recipesById.get(id)?.ingredients ?? [],
+    ingredients: (recipesById.get(id)?.ingredients ?? []).flatMap(sec => sec.items),
   }))
   const updatedItems = mergeIngredients(ingredientSets)
   const previous = shoppingListsCache
@@ -549,7 +592,7 @@ export function removeRecipeFromShoppingList(listId: string, recipeId: string): 
   const remainingRecipeIds = list.sourceRecipeIds.filter(id => id !== recipeId)
   const ingredientSets = remainingRecipeIds.map(id => ({
     recipeId: id,
-    ingredients: recipesById.get(id)?.ingredients ?? [],
+    ingredients: (recipesById.get(id)?.ingredients ?? []).flatMap(sec => sec.items),
   }))
   const freshItems = mergeIngredients(ingredientSets)
   const freeformItems = list.items.filter(i => i.sourceRecipeIds.length === 0)

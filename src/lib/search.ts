@@ -10,7 +10,7 @@ export function searchRecipes(recipes: Recipe[], query: string): Recipe[] {
   // title/ingredient/body search.
   if (terms.length > 1) {
     return recipes.filter(r =>
-      terms.every(term => r.ingredients.some(i => i.item.toLowerCase().includes(term)))
+      terms.every(term => r.ingredients.some(sec => sec.items.some(i => i.item.toLowerCase().includes(term))))
     )
   }
 
@@ -23,10 +23,10 @@ export function searchRecipes(recipes: Recipe[], query: string): Recipe[] {
   for (const r of recipes) {
     if (r.title.toLowerCase().includes(q)) {
       titleMatches.push(r)
-    } else if (r.ingredients.some(i => i.item.toLowerCase().includes(q))) {
+    } else if (r.ingredients.some(sec => sec.items.some(i => i.item.toLowerCase().includes(q)))) {
       ingredientMatches.push(r)
     } else if (
-      r.steps.some(s => s.toLowerCase().includes(q)) ||
+      r.steps.some(sec => sec.items.some(s => s.toLowerCase().includes(q))) ||
       r.notes?.toLowerCase().includes(q)
     ) {
       bodyMatches.push(r)

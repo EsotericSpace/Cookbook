@@ -4,6 +4,20 @@ export interface Ingredient {
   unit: string
 }
 
+// A recipe's ingredients/steps are grouped into one or more sections so
+// recipes with distinct components (e.g. "Cake" and "Icing") can separate
+// them. Most recipes have exactly one section with no title, which renders
+// identically to a flat list.
+export interface IngredientSection {
+  title?: string
+  items: Ingredient[]
+}
+
+export interface StepSection {
+  title?: string
+  items: string[]
+}
+
 export type TagCategory = "cuisine" | "protein" | "meal" | "dishType" | "effort" | "diet"
 
 export const EFFORT_LEVELS = ["Easy", "Medium", "Difficult"] as const
@@ -32,8 +46,8 @@ export interface Recipe {
   cookTime?: string
   servings?: number
   imageUrl?: string
-  ingredients: Ingredient[]
-  steps: string[]
+  ingredients: IngredientSection[]
+  steps: StepSection[]
   tags: Tag[]
   notes?: string
   createdAt: string

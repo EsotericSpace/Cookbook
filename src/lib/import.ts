@@ -1,4 +1,4 @@
-import { MEAL_OCCASIONS, type Recipe, type Ingredient, type Tag } from "./types"
+import { MEAL_OCCASIONS, type Recipe, type Ingredient, type IngredientSection, type StepSection, type Tag } from "./types"
 
 const UNIT_ALIASES: Record<string, string> = {
   cups: "cup",
@@ -132,28 +132,85 @@ function extractSchema(html: string): Record<string, unknown> | null {
   return null
 }
 
-function schemaToRecipe(s: Record<string, unknown>): Partial<Recipe> {
-  const ingredients: Ingredient[] = ((s.recipeIngredient as string[]) ?? [])
-    .map(parseIngredientString)
-    .filter(i => i.item)
+// Some sites embed a redundant literal label as the first ingredient/
+// instruction line (e.g. "Ingredients:") — skip treating those as a
+// section header since they'd just duplicate the page's own heading.
+const SECTION_TITLE_DENYLIST = new Set(["ingredients", "instructions", "steps"])
 
-  const steps: string[] = []
-  for (const instr of (s.recipeInstructions as unknown[]) ?? []) {
-    if (typeof instr === "string") {
-      steps.push(instr.trim())
-    } else {
-      const obj = instr as Record<string, unknown>
-      if (obj["@type"] === "HowToStep") {
-        const text = (obj.text ?? obj.name ?? "") as string
-        if (text.trim()) steps.push(text.trim())
-      } else if (obj["@type"] === "HowToSection") {
-        for (const sub of (obj.itemListElement as Record<string, unknown>[]) ?? []) {
-          const text = (sub.text ?? sub.name ?? "") as string
-          if (text.trim()) steps.push(text.trim())
-        }
+// Recognizes group-header lines within a flat recipeIngredient array (e.g.
+// "For the icing:") — schema.org has no standard way to mark these, so
+// sites bake them into the ingredient list as plain, quantity-less text.
+function isHeaderShapedLine(trimmed: string): boolean {
+  if (!trimmed || /^\d/.test(trimmed)) return false
+  return /:$/.test(trimmed) || (/^for\s+the\s+/i.test(trimmed) && trimmed.length < 40)
+}
+
+function ingredientHeaderTitle(trimmed: string): string | null {
+  const title = trimmed.replace(/:$/, "").replace(/^for\s+the\s+/i, "").trim()
+  if (!title || SECTION_TITLE_DENYLIST.has(title.toLowerCase())) return null
+  return title
+}
+
+function buildIngredientSections(lines: string[]): IngredientSection[] {
+  const sections: IngredientSection[] = []
+  let current: IngredientSection = { items: [] }
+  const flush = () => { if (current.items.length > 0) sections.push(current) }
+
+  for (const raw of lines) {
+    const trimmed = raw.trim()
+    if (isHeaderShapedLine(trimmed)) {
+      const header = ingredientHeaderTitle(trimmed)
+      if (header) {
+        flush()
+        current = { title: header, items: [] }
       }
+      // Header-shaped but denylisted (e.g. a redundant "Ingredients:" label)
+      // — drop the line entirely rather than parsing it as an ingredient.
+      continue
+    }
+    const ing = parseIngredientString(raw)
+    if (ing.item) current.items.push(ing)
+  }
+  flush()
+  return sections
+}
+
+function buildStepSections(instructions: unknown[]): StepSection[] {
+  const sections: StepSection[] = []
+  let current: StepSection = { items: [] }
+  function flushCurrent() {
+    if (current.items.length > 0) sections.push(current)
+    current = { items: [] }
+  }
+
+  for (const instr of instructions) {
+    if (typeof instr === "string") {
+      const text = instr.trim()
+      if (text) current.items.push(text)
+      continue
+    }
+    const obj = instr as Record<string, unknown>
+    if (obj["@type"] === "HowToStep") {
+      const text = (obj.text ?? obj.name ?? "") as string
+      if (text.trim()) current.items.push(text.trim())
+    } else if (obj["@type"] === "HowToSection") {
+      flushCurrent()
+      const title = typeof obj.name === "string" ? obj.name.trim() : ""
+      const items: string[] = []
+      for (const sub of (obj.itemListElement as Record<string, unknown>[]) ?? []) {
+        const text = (sub.text ?? sub.name ?? "") as string
+        if (text.trim()) items.push(text.trim())
+      }
+      if (items.length > 0) sections.push({ title: title || undefined, items })
     }
   }
+  flushCurrent()
+  return sections
+}
+
+function schemaToRecipe(s: Record<string, unknown>): Partial<Recipe> {
+  const ingredients = buildIngredientSections((s.recipeIngredient as string[]) ?? [])
+  const steps = buildStepSections((s.recipeInstructions as unknown[]) ?? [])
 
   const tags: Tag[] = []
   const addTag = (category: Tag["category"], value: unknown) => {

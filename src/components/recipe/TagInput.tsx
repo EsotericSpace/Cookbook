@@ -15,8 +15,8 @@ interface TagInputProps {
   existingTags: Record<string, string[]>
 }
 
-const TAG_CATEGORIES: { key: TagCategory; label: string }[] = [
-  { key: "meal",     label: "Meal Type"    },
+const TAG_CATEGORIES: { key: TagCategory; label: string; required?: boolean }[] = [
+  { key: "meal",     label: "Meal Type", required: true },
   { key: "dishType", label: "Dish Type"    },
   { key: "cuisine",  label: "Cuisine"      },
   { key: "protein",  label: "Protein"      },
@@ -83,9 +83,11 @@ export default function TagInput({ tags, onChange, existingTags }: TagInputProps
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {TAG_CATEGORIES.map(({ key, label }) => (
+      {TAG_CATEGORIES.map(({ key, label, required }) => (
         <div key={key} className="space-y-1.5">
-          <Label className="capitalize">{label}</Label>
+          <Label className="capitalize">
+            {label} {required && <span className="text-primary">*</span>}
+          </Label>
           {key === "effort" ? (
             <Select value={getValuesForCategory("effort")[0] ?? "none"} onValueChange={handleEffortChange}>
               <SelectTrigger>

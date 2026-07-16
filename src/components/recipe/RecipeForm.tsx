@@ -10,8 +10,8 @@ import StepInput from "./StepInput"
 import TagInput from "./TagInput"
 import { importRecipeFromUrl } from "../../lib/import"
 import { toTitleCase } from "../../lib/utils"
-import { uploadRecipeImage, ImageUploadError, MAX_IMAGE_SIZE_BYTES } from "../../lib/imageUpload"
-import type { Recipe, Ingredient, Tag } from "../../lib/types"
+import { uploadRecipeImage, ImageUploadError } from "../../lib/imageUpload"
+import type { Recipe, IngredientSection, StepSection, Tag } from "../../lib/types"
 
 interface RecipeFormProps {
   initialData?: Partial<Recipe>
@@ -26,6 +26,20 @@ interface FormErrors {
   mealType?: string
 }
 
+// Drops empty rows within each section, then drops any section left with
+// no items (whether it started empty or was emptied by the row filter).
+function cleanIngredientSections(sections: IngredientSection[]): IngredientSection[] {
+  return sections
+    .map(sec => ({ ...sec, items: sec.items.filter(i => i.item.trim()) }))
+    .filter(sec => sec.items.length > 0)
+}
+
+function cleanStepSections(sections: StepSection[]): StepSection[] {
+  return sections
+    .map(sec => ({ ...sec, items: sec.items.filter(s => s.trim()) }))
+    .filter(sec => sec.items.length > 0)
+}
+
 export default function RecipeForm({ initialData, onSave, onCancel, existingTags = {} }: RecipeFormProps) {
   const [title, setTitle] = useState(initialData?.title ?? "")
   const [source, setSource] = useState(initialData?.source ?? "")
@@ -33,11 +47,11 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
   const [cookTime, setCookTime] = useState(initialData?.cookTime ?? "")
   const [servings, setServings] = useState<string>(initialData?.servings?.toString() ?? "")
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl ?? "")
-  const [ingredients, setIngredients] = useState<Ingredient[]>(
-    initialData?.ingredients?.length ? initialData.ingredients : [{ item: "", quantity: "", unit: "" }]
+  const [ingredients, setIngredients] = useState<IngredientSection[]>(
+    initialData?.ingredients?.length ? initialData.ingredients : [{ items: [{ item: "", quantity: "", unit: "" }] }]
   )
-  const [steps, setSteps] = useState<string[]>(
-    initialData?.steps?.length ? initialData.steps : [""]
+  const [steps, setSteps] = useState<StepSection[]>(
+    initialData?.steps?.length ? initialData.steps : [{ items: [""] }]
   )
   const [tags, setTags] = useState<Tag[]>(initialData?.tags ?? [])
   const [notes, setNotes] = useState(initialData?.notes ?? "")
@@ -97,7 +111,7 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
     if (!title.trim()) {
       newErrors.title = "Title is required."
     }
-    if (!ingredients.some(i => i.item.trim())) {
+    if (!ingredients.some(sec => sec.items.some(i => i.item.trim()))) {
       newErrors.ingredients = "At least one ingredient is required."
     }
     if (!tags.some(t => t.category === "meal")) {
@@ -118,8 +132,8 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
       cookTime: cookTime.trim() || undefined,
       servings: servings ? parseInt(servings, 10) : undefined,
       imageUrl: imageUrl.trim() || undefined,
-      ingredients: ingredients.filter(i => i.item.trim()),
-      steps: steps.filter(s => s.trim()),
+      ingredients: cleanIngredientSections(ingredients),
+      steps: cleanStepSections(steps),
       tags,
       notes: notes.trim() || undefined,
     })
@@ -135,7 +149,7 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
         </Label>
         <div className="flex gap-2">
           <Input
-            placeholder="Paste a recipe URL…"
+            placeholder="https://…"
             value={urlInput}
             onChange={e => { setUrlInput(e.target.value); setImportError(null) }}
             onKeyDown={e => e.key === "Enter" && (e.preventDefault(), handleImport())}
@@ -158,7 +172,7 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
       {/* Title */}
       <div className="space-y-1.5">
         <Label htmlFor="title">
-          Title <span className="text-destructive">*</span>
+          Title <span className="text-primary">*</span>
         </Label>
         <Input
           id="title"
@@ -209,7 +223,7 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Paste a URL, or upload a JPEG/PNG/WebP/GIF up to {(MAX_IMAGE_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB.
+          Paste a URL, or upload a JPEG/PNG/WebP/GIF file.
         </p>
         {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
         {imageUrl && !previewError && (
@@ -261,9 +275,9 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
       {/* Ingredients */}
       <div className="space-y-2">
         <Label>
-          Ingredients <span className="text-destructive">*</span>
+          Ingredients <span className="text-primary">*</span>
         </Label>
-        <IngredientInput ingredients={ingredients} onChange={setIngredients} />
+        <IngredientInput sections={ingredients} onChange={setIngredients} />
         {errors.ingredients && <p className="text-sm text-destructive">{errors.ingredients}</p>}
       </div>
 
@@ -272,16 +286,14 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
       {/* Steps */}
       <div className="space-y-2">
         <Label>Steps</Label>
-        <StepInput steps={steps} onChange={setSteps} />
+        <StepInput sections={steps} onChange={setSteps} />
       </div>
 
       <Separator />
 
       {/* Tags */}
       <div className="space-y-2">
-        <Label>
-          Tags <span className="text-muted-foreground font-normal text-xs">(Meal type required)</span>
-        </Label>
+        <Label>Tags</Label>
         <TagInput tags={tags} onChange={t => { setTags(t); setErrors(e => ({ ...e, mealType: undefined })) }} existingTags={existingTags} />
         {errors.mealType && <p className="text-sm text-destructive">{errors.mealType}</p>}
       </div>

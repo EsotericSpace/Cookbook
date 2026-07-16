@@ -84,6 +84,9 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
     })
   }
 
+  const hasIngredients = recipe.ingredients.some(sec => sec.items.length > 0)
+  const hasSteps = recipe.steps.some(sec => sec.items.length > 0)
+
   // Group tags by category
   const tagsByCategory: Partial<Record<TagCategory, string[]>> = {}
   for (const tag of recipe.tags) {
@@ -246,38 +249,56 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
       <Separator className="mb-6" />
 
       {/* Ingredients & Steps */}
-      {(recipe.ingredients.length > 0 || recipe.steps.length > 0) && (
+      {(hasIngredients || hasSteps) && (
         <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-x-10 gap-y-6 mb-6">
-          {recipe.ingredients.length > 0 && (
+          {hasIngredients && (
             <section>
               <h2 className="text-xl font-semibold mb-3">Ingredients</h2>
-              <ul className="space-y-2">
-                {recipe.ingredients.map((ing, i) => {
-                  const qty = [ing.quantity, ing.unit].filter(Boolean).join(" ")
-                  return (
-                    <li key={i} className="text-sm">
-                      {qty && <span className="font-medium text-muted-foreground">{qty} </span>}
-                      {ing.item}
-                    </li>
-                  )
-                })}
-              </ul>
+              <div className="space-y-4">
+                {recipe.ingredients.filter(sec => sec.items.length > 0).map((sec, si) => (
+                  <div key={si}>
+                    {sec.title && (
+                      <h3 className="text-sm font-semibold text-muted-foreground mb-2">{sec.title}</h3>
+                    )}
+                    <ul className="space-y-2">
+                      {sec.items.map((ing, i) => {
+                        const qty = [ing.quantity, ing.unit].filter(Boolean).join(" ")
+                        return (
+                          <li key={i} className="text-sm">
+                            {qty && <span className="font-medium text-muted-foreground">{qty} </span>}
+                            {ing.item}
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </section>
           )}
 
-          {recipe.steps.length > 0 && (
+          {hasSteps && (
             <section>
               <h2 className="text-xl font-semibold mb-3">Steps</h2>
-              <ol className="space-y-4">
-                {recipe.steps.map((step, i) => (
-                  <li key={i} className="flex gap-4">
-                    <span className="shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-primary/10 text-primary text-sm font-semibold">
-                      {i + 1}
-                    </span>
-                    <p className="text-sm leading-relaxed pt-0.5">{step}</p>
-                  </li>
+              <div className="space-y-6">
+                {recipe.steps.filter(sec => sec.items.length > 0).map((sec, si) => (
+                  <div key={si}>
+                    {sec.title && (
+                      <h3 className="text-sm font-semibold text-muted-foreground mb-2">{sec.title}</h3>
+                    )}
+                    <ol className="space-y-4">
+                      {sec.items.map((step, i) => (
+                        <li key={i} className="flex gap-4">
+                          <span className="shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                            {i + 1}
+                          </span>
+                          <p className="text-sm leading-relaxed pt-0.5">{step}</p>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
                 ))}
-              </ol>
+              </div>
             </section>
           )}
         </div>
