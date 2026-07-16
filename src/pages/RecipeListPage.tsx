@@ -73,7 +73,7 @@ export default function RecipeListPage() {
   const session = useSession()
 
   const query = searchParams.get("q") ?? ""
-  const sort = searchParams.get("sort") ?? "title-asc"
+  const sort = searchParams.get("sort") ?? "date-desc"
   const activeFilters = parseFilters(searchParams.get("filters"))
 
   function handleFilterChange(category: string, value: string, checked: boolean) {

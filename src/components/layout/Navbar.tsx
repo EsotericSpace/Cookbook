@@ -60,7 +60,7 @@ export default function Navbar() {
           <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Search, or list ingredients: eggs, feta, tomatoes"
+            placeholder="Search recipes or list ingredients..."
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
           />
