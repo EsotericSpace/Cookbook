@@ -1,10 +1,12 @@
-import { useState } from "react"
-import { Badge, tagCategoryColor } from "../ui/badge"
+import { useRef, useState } from "react"
+import { Badge, badgeVariants, tagCategoryColor } from "../ui/badge"
 import { Icon } from "../ui/icon"
+import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover"
 import { cn } from "../../lib/utils"
 import { getHeaderColors, mealGradientStyle, parseMinutes, formatTime } from "../../lib/colors"
 import { getTagColor } from "../../lib/storage"
 import { useFitText } from "../../lib/useFitText"
+import { useExclusivePopover } from "../../lib/useExclusivePopover"
 import type { Recipe } from "../../lib/types"
 
 interface RecipeCardProps {
@@ -21,6 +23,18 @@ const TAG_CATEGORY_ORDER: Record<string, number> = { meal: 0, dishType: 1, diet:
 export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
   const [imageError, setImageError] = useState(false)
   const showImage = !!recipe.imageUrl && !imageError
+  const [tagsOpen, setTagsOpen] = useExclusivePopover()
+  const tagsOpenedAtRef = useRef(0)
+
+  // Opening a second card's tag popover while another is already open makes
+  // Radix's dismiss layer for the *newly opened* one briefly mistake the
+  // still-settling outside interaction for a fresh outside click, closing it
+  // right after it opens. Ignoring outside-interactions in that first
+  // instant sidesteps it without weakening real "click away" dismissal.
+  function handleTagsOpenChange(next: boolean) {
+    if (next) tagsOpenedAtRef.current = Date.now()
+    setTagsOpen(next)
+  }
 
   const mealTags = recipe.tags.filter(t => t.category === "meal")
   const mealValues = mealTags.map(t => t.value)
@@ -123,9 +137,42 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
                 </Badge>
               ))}
               {sortedTags.length > MAX_VISIBLE_TAGS && (
-                <Badge variant="outline" className="text-xs px-2 py-0.5 rounded-full shrink-0 text-muted-foreground">
-                  +{sortedTags.length - MAX_VISIBLE_TAGS}
-                </Badge>
+                <Popover open={tagsOpen} onOpenChange={handleTagsOpenChange}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={e => e.stopPropagation()}
+                      className={cn(
+                        badgeVariants({ variant: "outline" }),
+                        "text-xs px-2 py-0.5 shrink-0 text-muted-foreground hover:bg-muted transition-colors"
+                      )}
+                    >
+                      +{sortedTags.length - MAX_VISIBLE_TAGS}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-auto min-w-0 max-w-64 p-2"
+                    align="start"
+                    side="top"
+                    collisionPadding={{ top: 76 }}
+                    onClick={e => e.stopPropagation()}
+                    onInteractOutside={e => {
+                      if (Date.now() - tagsOpenedAtRef.current < 200) e.preventDefault()
+                    }}
+                  >
+                    <div className="flex flex-wrap gap-1">
+                      {sortedTags.slice(MAX_VISIBLE_TAGS).map((tag, i) => (
+                        <Badge
+                          key={i}
+                          variant="outline"
+                          className={cn("text-xs px-2 py-0.5 rounded-full shrink-0", tagCategoryColor(tag.category))}
+                        >
+                          {tag.value}
+                        </Badge>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
           )}
