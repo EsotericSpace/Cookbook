@@ -12,6 +12,7 @@ import {
 import { useSession } from "../../lib/auth"
 import { createShoppingList } from "../../lib/storage"
 import SettingsMenu from "./SettingsMenu"
+import LoginButton from "./LoginButton"
 
 export default function Navbar() {
   const navigate = useNavigate()
@@ -67,7 +68,7 @@ export default function Navbar() {
 
         <div className="shrink-0 flex items-center gap-2">
           <SettingsMenu />
-          {session && (
+          {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="default" size="sm" aria-label="Create">
@@ -86,6 +87,8 @@ export default function Navbar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : (
+            <LoginButton />
           )}
         </div>
       </div>
