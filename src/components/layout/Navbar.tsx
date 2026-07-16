@@ -66,24 +66,27 @@ export default function Navbar() {
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
+          <SettingsMenu />
           {session && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Add">
-                  <Icon name="add" size="lg" />
+                <Button variant="default" size="sm" className="gap-1.5" aria-label="Create">
+                  <Icon name="add" size="sm" />
+                  <span className="hidden sm:inline">Create</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/add")}>
+                <DropdownMenuItem onClick={() => navigate("/add")} className="gap-2">
+                  <Icon name="menu_book" size="sm" className="opacity-50" />
                   Recipe
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleNewShoppingList}>
+                <DropdownMenuItem onClick={handleNewShoppingList} className="gap-2">
+                  <Icon name="shopping_cart" size="sm" className="opacity-50" />
                   Shopping list
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <SettingsMenu />
         </div>
       </div>
     </header>
