@@ -184,6 +184,16 @@ function schemaToRecipe(s: Record<string, unknown>): Partial<Recipe> {
   }
 }
 
+// Some sites (e.g. NYT Cooking) display prep/cook time on the page but
+// leave them null in their JSON-LD Recipe schema. Fall back to scraping the
+// visible <dt>label</dt><dd>value</dd> stat pair by label text — more
+// fragile than the structured-data path (breaks if the site's markup
+// changes), so it's only used when JSON-LD didn't give us an answer.
+function extractLabeledTime(html: string, label: string): string | undefined {
+  const re = new RegExp(`<dt[^>]*>\\s*${label}\\s*</dt>\\s*<dd[^>]*>([^<]+)</dd>`, "i")
+  return html.match(re)?.[1]?.trim()
+}
+
 export async function importRecipeFromUrl(url: string): Promise<Partial<Recipe>> {
   // corsproxy.io's free tier only serves localhost/dev origins — in
   // production, fetch server-side via our own function instead, which
@@ -200,5 +210,8 @@ export async function importRecipeFromUrl(url: string): Promise<Partial<Recipe>>
       "No structured recipe data found on this page. Try copying the recipe manually."
     )
   }
-  return schemaToRecipe(schema)
+  const recipe = schemaToRecipe(schema)
+  if (!recipe.prepTime) recipe.prepTime = extractLabeledTime(html, "Prep Time")
+  if (!recipe.cookTime) recipe.cookTime = extractLabeledTime(html, "Cook Time")
+  return recipe
 }
