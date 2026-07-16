@@ -1,4 +1,4 @@
-import type { Recipe, Ingredient, Tag } from "./types"
+import { MEAL_OCCASIONS, type Recipe, type Ingredient, type Tag } from "./types"
 
 const UNIT_ALIASES: Record<string, string> = {
   cups: "cup",
@@ -167,7 +167,15 @@ function schemaToRecipe(s: Record<string, unknown>): Partial<Recipe> {
     return arr.flatMap(item => typeof item === "string" ? item.split(/,\s*/) : [item])
   }
   toArr(s.recipeCuisine).forEach((c: unknown) => addTag("cuisine", c))
-  toArr(s.recipeCategory).forEach((c: unknown) => addTag("meal", c))
+  // Sites free-type recipeCategory (e.g. "Main Course", "Weeknight Dinners")
+  // rather than sticking to a fixed vocabulary — only keep values that map
+  // onto our standard meal-occasion list, dropping the rest, so imports
+  // don't reintroduce the tag sprawl we're trying to clean up.
+  toArr(s.recipeCategory).forEach((c: unknown) => {
+    const raw = String(c ?? "").trim()
+    const matched = MEAL_OCCASIONS.find(o => o.toLowerCase() === raw.toLowerCase())
+    if (matched) addTag("meal", matched)
+  })
   toArr(s.keywords).slice(0, 3).forEach((k: unknown) => addTag("custom", k))
 
   return {

@@ -8,6 +8,11 @@ export type TagCategory = "cuisine" | "protein" | "meal" | "effort" | "diet" | "
 
 export const EFFORT_LEVELS = ["Easy", "Medium", "Difficult"] as const
 
+// Standard vocabulary for the "meal" tag category — kept fixed rather than
+// letting it grow open-ended (see MEAL_OCCASIONS usage in import.ts, which
+// filters out noisy scraped values like "Main Course" that don't map here).
+export const MEAL_OCCASIONS = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack"] as const
+
 export interface Tag {
   category: TagCategory
   value: string
