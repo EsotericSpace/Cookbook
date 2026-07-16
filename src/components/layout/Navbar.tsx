@@ -70,17 +70,17 @@ export default function Navbar() {
           {session && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default" size="sm" className="gap-1.5" aria-label="Create">
+                <Button variant="default" size="sm" aria-label="Create">
                   <Icon name="add" size="sm" />
                   <span className="hidden sm:inline">Create</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/add")} className="gap-2">
+                <DropdownMenuItem onClick={() => navigate("/add")}>
                   <Icon name="menu_book" size="sm" className="opacity-50" />
                   Recipe
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleNewShoppingList} className="gap-2">
+                <DropdownMenuItem onClick={handleNewShoppingList}>
                   <Icon name="shopping_cart" size="sm" className="opacity-50" />
                   Shopping list
                 </DropdownMenuItem>

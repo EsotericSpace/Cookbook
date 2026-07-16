@@ -82,8 +82,8 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
           {/* Icon metadata row */}
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {recipe.prepTime && (
-              <span className="flex items-center gap-1">
-                <Icon name="restaurant" size="xs" />
+              <span className="flex items-center gap-1.5">
+                <Icon name="grocery" size="xs" />
                 <span className="flex items-center gap-2">
                   Prep
                   <span className="text-foreground font-medium">{prepMin != null ? formatTime(prepMin) : recipe.prepTime}</span>
@@ -91,8 +91,8 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
               </span>
             )}
             {recipe.cookTime && (
-              <span className="flex items-center gap-1">
-                <Icon name="local_fire_department" size="xs" />
+              <span className="flex items-center gap-1.5">
+                <Icon name="skillet" size="xs" />
                 <span className="flex items-center gap-2">
                   Cook
                   <span className="text-foreground font-medium">{cookMin != null ? formatTime(cookMin) : recipe.cookTime}</span>
@@ -100,7 +100,7 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
               </span>
             )}
             {recipe.servings && (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1.5">
                 <Icon name="group" size="xs" />
                 <span className="flex items-center gap-2">
                   Serves

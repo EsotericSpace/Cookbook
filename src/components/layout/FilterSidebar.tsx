@@ -85,7 +85,7 @@ export default function FilterSidebar({
                 variant="outline"
                 size="sm"
                 className={cn(
-                  "gap-1.5 h-8 shrink-0",
+                  "h-8 shrink-0",
                   activeCount > 0 && "border-primary text-primary"
                 )}
               >
@@ -130,7 +130,7 @@ export default function FilterSidebar({
           variant="ghost"
           size="sm"
           onClick={onClearAll}
-          className="h-8 gap-1 shrink-0 text-muted-foreground hover:text-foreground"
+          className="h-8 shrink-0 text-muted-foreground hover:text-foreground"
         >
           <Icon name="close" size="sm" />
           Clear all

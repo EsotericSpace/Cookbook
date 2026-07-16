@@ -137,7 +137,7 @@ export default function RecipeListPage() {
               <>
                 <p className="text-muted-foreground mb-6">Add your first recipe to get started!</p>
                 <Button onClick={() => navigate("/add")}>
-                  <Icon name="add" className="mr-2" />
+                  <Icon name="add" />
                   Add Recipe
                 </Button>
               </>

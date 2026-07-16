@@ -21,7 +21,7 @@ export default function AisleGroup({ aisle, items, editable, onItemChange, onIte
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex w-full items-center gap-2 py-2 text-left group">
+      <CollapsibleTrigger className="flex w-full items-center gap-1.5 py-2 text-left group">
         {open
           ? <Icon name="expand_more" className="text-muted-foreground shrink-0" />
           : <Icon name="chevron_right" className="text-muted-foreground shrink-0" />

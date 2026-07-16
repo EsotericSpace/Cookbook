@@ -91,14 +91,14 @@ export default function StepInput({ sections, onChange }: StepInputProps) {
             </div>
           ))}
           <Button type="button" variant="outline" size="sm" onClick={() => addStep(sectionIndex)}>
-            <Icon name="add" className="mr-1 text-primary" />
+            <Icon name="add" className="text-primary" />
             Add step
           </Button>
         </div>
       ))}
 
       <Button type="button" variant="ghost" size="sm" onClick={addSection}>
-        <Icon name="add" className="mr-1 text-primary" />
+        <Icon name="add" className="text-primary" />
         Add section
       </Button>
     </div>

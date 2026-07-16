@@ -180,7 +180,7 @@ export default function ShoppingListPage() {
           variant="ghost"
           size="sm"
           onClick={() => navigate("/")}
-          className="gap-1 px-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
+          className="px-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
           disabled={editMode}
         >
           <Icon name="chevron_left" />
@@ -246,7 +246,7 @@ export default function ShoppingListPage() {
           ))}
           <Popover open={addRecipeOpen} onOpenChange={setAddRecipeOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1 rounded-full h-8" disabled={editMode}>
+              <Button variant="outline" size="sm" className="rounded-full h-8" disabled={editMode}>
                 <Icon name="add" size="sm" />
                 Add recipe
               </Button>
@@ -312,11 +312,11 @@ export default function ShoppingListPage() {
 
       <div className="flex items-center justify-between pt-4 border-t">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExport} disabled={editMode}>
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={editMode}>
             <Icon name="download" size="sm" />
             Export .txt
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEmail} disabled={editMode}>
+          <Button variant="outline" size="sm" onClick={handleEmail} disabled={editMode}>
             <Icon name="mail" size="sm" />
             Email
           </Button>

@@ -132,14 +132,14 @@ export default function IngredientInput({ sections, onChange }: IngredientInputP
             onClick={() => addIngredient(sectionIndex)}
             className="mt-1"
           >
-            <Icon name="add" className="mr-1 text-primary" />
+            <Icon name="add" className="text-primary" />
             Add ingredient
           </Button>
         </div>
       ))}
 
       <Button type="button" variant="ghost" size="sm" onClick={addSection}>
-        <Icon name="add" className="mr-1 text-primary" />
+        <Icon name="add" className="text-primary" />
         Add section
       </Button>
     </div>

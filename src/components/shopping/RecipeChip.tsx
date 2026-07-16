@@ -12,7 +12,7 @@ export default function RecipeChip({ recipe, onRemove, disabled }: RecipeChipPro
   const navigate = useNavigate()
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border bg-background px-3 py-1 text-sm font-medium">
+    <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-3 py-1 text-sm font-medium">
       <button
         type="button"
         className="hover:text-primary transition-colors"
@@ -23,7 +23,7 @@ export default function RecipeChip({ recipe, onRemove, disabled }: RecipeChipPro
       {!disabled && (
         <button
           type="button"
-          className="ml-1 rounded-full hover:bg-muted p-0.5 transition-colors"
+          className="rounded-full hover:bg-muted p-0.5 transition-colors"
           onClick={onRemove}
           aria-label={`Remove ${recipe.title}`}
         >

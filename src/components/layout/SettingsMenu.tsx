@@ -98,7 +98,7 @@ export default function SettingsMenu() {
             <button
               type="button"
               onClick={() => signOut()}
-              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted"
+              className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-sm hover:bg-muted"
             >
               <Icon name="logout" size="sm" className="opacity-50" />
               Sign out

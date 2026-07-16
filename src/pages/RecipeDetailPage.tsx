@@ -32,7 +32,7 @@ export default function RecipeDetailPage() {
           variant="ghost"
           size="sm"
           onClick={() => navigate("/")}
-          className="gap-1 px-0 text-primary hover:text-primary hover:bg-transparent"
+          className="px-0 text-primary hover:text-primary hover:bg-transparent"
         >
           <Icon name="chevron_left" />
           Back to recipes

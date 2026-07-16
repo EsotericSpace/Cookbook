@@ -124,7 +124,7 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="gap-1 px-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
+          className="px-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
         >
           <Icon name="chevron_left" />
           Back to recipes
@@ -134,7 +134,7 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
             const lists = getShoppingLists()
             if (lists.length <= 1) {
               return (
-                <Button variant="outline" size="sm" onClick={() => handleAddToShoppingList()} className="gap-1.5">
+                <Button variant="outline" size="sm" onClick={() => handleAddToShoppingList()}>
                   <Icon name="shopping_cart" />
                   Add to list
                 </Button>
@@ -143,7 +143,7 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
             return (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5">
+                  <Button variant="outline" size="sm">
                     <Icon name="shopping_cart" />
                     Add to list
                   </Button>
@@ -187,36 +187,39 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
 
       {/* Header */}
       <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
-      {recipe.source && (
-        <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
-          <Icon name="open_in_new" size="sm" />
-          {sourceUrl(recipe.source) ? (
-            <a
-              href={sourceUrl(recipe.source)!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground hover:underline"
-            >
-              {recipe.source}
-            </a>
-          ) : (
-            recipe.source
-          )}
-        </p>
-      )}
+      {recipe.source && (() => {
+        const link = sourceUrl(recipe.source)
+        return (
+          <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1.5">
+            <Icon name={link ? "open_in_new" : "chef_hat"} size="sm" />
+            {link ? (
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground hover:underline"
+              >
+                {recipe.source}
+              </a>
+            ) : (
+              recipe.source
+            )}
+          </p>
+        )
+      })()}
 
       {/* Meta row */}
       {(recipe.prepTime || recipe.cookTime || recipe.servings) && (
         <div className="flex flex-wrap gap-6 mb-6 text-sm text-muted-foreground">
           {recipe.prepTime && (
             <span className="flex items-center gap-1.5">
-              <Icon name="schedule" />
+              <Icon name="grocery" />
               <span>Prep: <strong className="text-foreground">{recipe.prepTime}</strong></span>
             </span>
           )}
           {recipe.cookTime && (
             <span className="flex items-center gap-1.5">
-              <Icon name="schedule" />
+              <Icon name="skillet" />
               <span>Cook: <strong className="text-foreground">{recipe.cookTime}</strong></span>
             </span>
           )}

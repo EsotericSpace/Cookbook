@@ -72,7 +72,7 @@ export function Combobox({ options, value, onChange, placeholder = "Select...", 
         {value.map(v => (
           <span
             key={v}
-            className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground rounded-full px-2 py-0.5 text-xs font-medium"
+            className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground rounded-full px-2 py-0.5 text-xs font-medium"
           >
             {v}
             <button
