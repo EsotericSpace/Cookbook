@@ -59,6 +59,7 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
   const [editing, setEditing] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [brokenSectionImages, setBrokenSectionImages] = useState<Set<number>>(new Set())
   const existingTags = getAllTags()
 
   function handleAddToShoppingList(listId?: string) {
@@ -288,6 +289,14 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
                   <div key={si}>
                     {sec.title && (
                       <h3 className="text-sm font-semibold text-muted-foreground mb-2">{sec.title}</h3>
+                    )}
+                    {sec.imageUrl && !brokenSectionImages.has(si) && (
+                      <img
+                        src={sec.imageUrl}
+                        alt=""
+                        className="mb-3 w-full max-h-64 rounded-md border object-cover"
+                        onError={() => setBrokenSectionImages(prev => new Set(prev).add(si))}
+                      />
                     )}
                     <ol className="space-y-4">
                       {sec.items.map((step, i) => (

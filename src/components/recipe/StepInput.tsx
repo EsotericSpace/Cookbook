@@ -2,6 +2,7 @@ import { Textarea } from "../ui/textarea"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { Icon } from "../ui/icon"
+import ImageInput from "./ImageInput"
 import type { StepSection } from "../../lib/types"
 
 interface StepInputProps {
@@ -36,6 +37,10 @@ export default function StepInput({ sections, onChange }: StepInputProps) {
     updateSection(sectionIndex, { ...sections[sectionIndex], title })
   }
 
+  function updateSectionImage(sectionIndex: number, imageUrl: string) {
+    updateSection(sectionIndex, { ...sections[sectionIndex], imageUrl })
+  }
+
   function removeSection(sectionIndex: number) {
     onChange(sections.filter((_, i) => i !== sectionIndex))
   }
@@ -48,14 +53,14 @@ export default function StepInput({ sections, onChange }: StepInputProps) {
     <div className="space-y-5">
       {sections.map((section, sectionIndex) => (
         <div key={sectionIndex} className="space-y-3">
-          {sections.length > 1 && (
-            <div className="flex gap-2 items-center">
-              <Input
-                placeholder="Section name"
-                value={section.title ?? ""}
-                onChange={e => updateSectionTitle(sectionIndex, e.target.value)}
-                className="font-medium"
-              />
+          <div className="flex gap-2 items-center">
+            <Input
+              placeholder="Section name (optional)"
+              value={section.title ?? ""}
+              onChange={e => updateSectionTitle(sectionIndex, e.target.value)}
+              className="font-medium"
+            />
+            {sectionIndex > 0 && (
               <Button
                 type="button"
                 variant="ghost"
@@ -65,8 +70,9 @@ export default function StepInput({ sections, onChange }: StepInputProps) {
               >
                 <Icon name="delete" />
               </Button>
-            </div>
-          )}
+            )}
+          </div>
+          <ImageInput value={section.imageUrl ?? ""} onChange={url => updateSectionImage(sectionIndex, url)} />
 
           {section.items.map((step, itemIndex) => (
             <div key={itemIndex} className="flex gap-2 items-start">
@@ -90,14 +96,14 @@ export default function StepInput({ sections, onChange }: StepInputProps) {
               </Button>
             </div>
           ))}
-          <Button type="button" variant="outline" size="sm" onClick={() => addStep(sectionIndex)}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => addStep(sectionIndex)}>
             <Icon name="add" className="text-primary" />
             Add step
           </Button>
         </div>
       ))}
 
-      <Button type="button" variant="ghost" size="sm" onClick={addSection}>
+      <Button type="button" variant="outline" size="sm" onClick={addSection}>
         <Icon name="add" className="text-primary" />
         Add section
       </Button>

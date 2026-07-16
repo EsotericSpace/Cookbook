@@ -234,6 +234,10 @@ function hasOptionalStringTitle(v: { title?: unknown }): boolean {
   return v.title === undefined || typeof v.title === "string"
 }
 
+function hasOptionalStringImageUrl(v: { imageUrl?: unknown }): boolean {
+  return v.imageUrl === undefined || typeof v.imageUrl === "string"
+}
+
 function isIngredientSection(v: unknown): v is IngredientSection {
   const s = v as IngredientSection
   return !!s && typeof s === "object" && Array.isArray(s.items) && s.items.every(isIngredient) && hasOptionalStringTitle(s)
@@ -241,7 +245,8 @@ function isIngredientSection(v: unknown): v is IngredientSection {
 
 function isStepSection(v: unknown): v is StepSection {
   const s = v as StepSection
-  return !!s && typeof s === "object" && Array.isArray(s.items) && s.items.every(i => typeof i === "string") && hasOptionalStringTitle(s)
+  return !!s && typeof s === "object" && Array.isArray(s.items) && s.items.every(i => typeof i === "string")
+    && hasOptionalStringTitle(s) && hasOptionalStringImageUrl(s)
 }
 
 function isTag(v: unknown): v is Tag {

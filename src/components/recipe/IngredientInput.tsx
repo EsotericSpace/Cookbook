@@ -70,14 +70,14 @@ export default function IngredientInput({ sections, onChange }: IngredientInputP
 
       {sections.map((section, sectionIndex) => (
         <div key={sectionIndex} className="space-y-2">
-          {sections.length > 1 && (
-            <div className="flex gap-2 items-center">
-              <Input
-                placeholder="Section name"
-                value={section.title ?? ""}
-                onChange={e => updateSectionTitle(sectionIndex, e.target.value)}
-                className="font-medium"
-              />
+          <div className="flex gap-2 items-center">
+            <Input
+              placeholder="Section name (optional)"
+              value={section.title ?? ""}
+              onChange={e => updateSectionTitle(sectionIndex, e.target.value)}
+              className="font-medium"
+            />
+            {sectionIndex > 0 && (
               <Button
                 type="button"
                 variant="ghost"
@@ -87,8 +87,8 @@ export default function IngredientInput({ sections, onChange }: IngredientInputP
               >
                 <Icon name="delete" />
               </Button>
-            </div>
-          )}
+            )}
+          </div>
 
           {section.items.map((ing, itemIndex) => (
             <div key={itemIndex} className="flex gap-2 items-center">
@@ -127,7 +127,7 @@ export default function IngredientInput({ sections, onChange }: IngredientInputP
           ))}
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => addIngredient(sectionIndex)}
             className="mt-1"
@@ -138,7 +138,7 @@ export default function IngredientInput({ sections, onChange }: IngredientInputP
         </div>
       ))}
 
-      <Button type="button" variant="ghost" size="sm" onClick={addSection}>
+      <Button type="button" variant="outline" size="sm" onClick={addSection}>
         <Icon name="add" className="text-primary" />
         Add section
       </Button>

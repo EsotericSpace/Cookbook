@@ -15,6 +15,7 @@ export interface IngredientSection {
 
 export interface StepSection {
   title?: string
+  imageUrl?: string
   items: string[]
 }
 

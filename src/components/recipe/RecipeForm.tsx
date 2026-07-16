@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { Icon } from "../ui/icon"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
@@ -8,9 +8,9 @@ import { Separator } from "../ui/separator"
 import IngredientInput from "./IngredientInput"
 import StepInput from "./StepInput"
 import TagInput from "./TagInput"
+import ImageInput from "./ImageInput"
 import { importRecipeFromUrl } from "../../lib/import"
 import { toTitleCase } from "../../lib/utils"
-import { uploadRecipeImage, ImageUploadError } from "../../lib/imageUpload"
 import type { Recipe, IngredientSection, StepSection, Tag } from "../../lib/types"
 
 interface RecipeFormProps {
@@ -36,7 +36,7 @@ function cleanIngredientSections(sections: IngredientSection[]): IngredientSecti
 
 function cleanStepSections(sections: StepSection[]): StepSection[] {
   return sections
-    .map(sec => ({ ...sec, items: sec.items.filter(s => s.trim()) }))
+    .map(sec => ({ ...sec, items: sec.items.filter(s => s.trim()), imageUrl: sec.imageUrl?.trim() || undefined }))
     .filter(sec => sec.items.length > 0)
 }
 
@@ -59,10 +59,6 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
   const [urlInput, setUrlInput] = useState("")
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const [previewError, setPreviewError] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function handleImport() {
     const url = urlInput.trim()
@@ -86,23 +82,6 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
       setImportError(err instanceof Error ? err.message : "Import failed.")
     } finally {
       setImporting(false)
-    }
-  }
-
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploading(true)
-    setUploadError(null)
-    try {
-      const url = await uploadRecipeImage(file)
-      setImageUrl(url)
-      setPreviewError(false)
-    } catch (err) {
-      setUploadError(err instanceof ImageUploadError ? err.message : "Upload failed.")
-    } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ""
     }
   }
 
@@ -195,47 +174,7 @@ export default function RecipeForm({ initialData, onSave, onCancel, existingTags
       </div>
 
       {/* Image */}
-      <div className="space-y-1.5">
-        <Label htmlFor="imageUrl">Image</Label>
-        <div className="flex gap-2">
-          <Input
-            id="imageUrl"
-            value={imageUrl}
-            onChange={e => { setImageUrl(e.target.value); setPreviewError(false) }}
-            placeholder="https://…"
-            className="flex-1"
-          />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="shrink-0"
-          >
-            {uploading ? "Uploading…" : "Upload"}
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Paste a URL, or upload a JPEG/PNG/WebP/GIF file.
-        </p>
-        {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
-        {imageUrl && !previewError && (
-          <img
-            key={imageUrl}
-            src={imageUrl}
-            alt=""
-            className="mt-2 h-32 w-auto max-w-xs rounded-md border object-cover"
-            onError={() => setPreviewError(true)}
-          />
-        )}
-      </div>
+      <ImageInput value={imageUrl} onChange={setImageUrl} label="Image" />
 
       {/* Time & Servings */}
       <div className="grid grid-cols-3 gap-4">
