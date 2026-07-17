@@ -146,6 +146,25 @@ create policy "users can delete their own recipes"
   to authenticated
   using (auth.uid() = user_id or public.is_admin());
 
+create table if not exists public.bookmarks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  recipe_id uuid not null references public.recipes(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists bookmarks_user_recipe_key
+  on public.bookmarks (user_id, recipe_id);
+
+alter table public.bookmarks enable row level security;
+
+drop policy if exists "users manage their own bookmarks" on public.bookmarks;
+create policy "users manage their own bookmarks"
+  on public.bookmarks for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 create table if not exists public.shopping_lists (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) default auth.uid(),
@@ -231,6 +250,12 @@ end $$;
 do $$
 begin
   alter publication supabase_realtime add table public.profiles;
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.bookmarks;
 exception when duplicate_object then null;
 end $$;
 

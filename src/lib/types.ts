@@ -76,6 +76,13 @@ export interface ShoppingList {
   items: ShoppingListItem[]
 }
 
+export interface Bookmark {
+  id: string
+  userId: string
+  recipeId: string
+  createdAt: string
+}
+
 export interface TagRegistryEntry {
   id: string
   createdBy: string

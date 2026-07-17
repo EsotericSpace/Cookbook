@@ -1,6 +1,6 @@
 import { toast } from "sonner"
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js"
-import type { Recipe, TagRegistryEntry, ShoppingList, ShoppingListItem, Ingredient, IngredientSection, StepSection, Tag, Profile } from "./types"
+import type { Recipe, TagRegistryEntry, ShoppingList, ShoppingListItem, Ingredient, IngredientSection, StepSection, Tag, Profile, Bookmark } from "./types"
 import { mergeIngredients } from "./ingredient-merge"
 import { assignAisle } from "./aisle-map"
 import { supabase } from "./supabaseClient"
@@ -21,6 +21,7 @@ let recipesById = new Map<string, Recipe>()
 let shoppingListsCache: ShoppingList[] = []
 let tagRegistryCache: TagRegistryEntry[] = []
 let profilesCache: Profile[] = []
+let bookmarksCache: Bookmark[] = []
 
 const listeners = new Set<() => void>()
 let version = 0
@@ -219,6 +220,21 @@ function toProfileRow(profile: Profile): ProfileRow {
   return { id: profile.id, display_name: profile.displayName, is_admin: profile.isAdmin }
 }
 
+interface BookmarkRow {
+  id: string
+  user_id: string
+  recipe_id: string
+  created_at: string
+}
+
+function fromBookmarkRow(row: BookmarkRow): Bookmark {
+  return { id: row.id, userId: row.user_id, recipeId: row.recipe_id, createdAt: row.created_at }
+}
+
+function toBookmarkRow(bookmark: Bookmark): BookmarkRow {
+  return { id: bookmark.id, user_id: bookmark.userId, recipe_id: bookmark.recipeId, created_at: bookmark.createdAt }
+}
+
 // ---------------------------------------------------------------------------
 // Shape validation. jsonb columns have no schema of their own, and with
 // multiple writers a malformed row could break rendering for every reader —
@@ -311,21 +327,24 @@ async function ensureProfileExists(): Promise<void> {
 }
 
 async function refetchAll(): Promise<void> {
-  const [recipesRes, listsRes, tagsRes, profilesRes] = await Promise.all([
+  const [recipesRes, listsRes, tagsRes, profilesRes, bookmarksRes] = await Promise.all([
     supabase.from("recipes").select("*"),
     supabase.from("shopping_lists").select("*"),
     supabase.from("tag_registry").select("*"),
     supabase.from("profiles").select("*"),
+    supabase.from("bookmarks").select("*"),
   ])
   if (recipesRes.error) console.error("Failed to load recipes", recipesRes.error)
   if (listsRes.error) console.error("Failed to load shopping lists", listsRes.error)
   if (tagsRes.error) console.error("Failed to load tags", tagsRes.error)
   if (profilesRes.error) console.error("Failed to load profiles", profilesRes.error)
+  if (bookmarksRes.error) console.error("Failed to load bookmarks", bookmarksRes.error)
 
   setRecipesCache(((recipesRes.data as RecipeRow[] | null) ?? []).map(fromRecipeRow))
   shoppingListsCache = ((listsRes.data as ShoppingListRow[] | null) ?? []).map(fromShoppingListRow)
   tagRegistryCache = ((tagsRes.data as TagRegistryRow[] | null) ?? []).map(fromTagRow)
   profilesCache = ((profilesRes.data as ProfileRow[] | null) ?? []).map(fromProfileRow)
+  bookmarksCache = ((bookmarksRes.data as BookmarkRow[] | null) ?? []).map(fromBookmarkRow)
   notify()
 }
 
@@ -393,6 +412,18 @@ function subscribeToRealtime(): void {
           return
         }
         profilesCache = upsertById(profilesCache, fromProfileRow(payload.new as ProfileRow))
+      })
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "bookmarks" },
+      (payload: RealtimePostgresChangesPayload<BookmarkRow>) => applyRealtimeChange(() => {
+        if (payload.eventType === "DELETE") {
+          const oldId = (payload.old as Partial<BookmarkRow>).id
+          if (oldId) bookmarksCache = bookmarksCache.filter(b => b.id !== oldId)
+          return
+        }
+        bookmarksCache = upsertById(bookmarksCache, fromBookmarkRow(payload.new as BookmarkRow))
       })
     )
     .subscribe(status => {
@@ -698,4 +729,66 @@ export function updateDisplayName(name: string): void {
       persistFailure("Failed to save your name")(error)
     }
   })
+}
+
+// ---------------------------------------------------------------------------
+// Bookmarks
+// ---------------------------------------------------------------------------
+
+export function isRecipeBookmarked(recipeId: string): boolean {
+  const userId = getCurrentUserId()
+  return bookmarksCache.some(b => b.userId === userId && b.recipeId === recipeId)
+}
+
+export function toggleBookmark(recipeId: string): void {
+  const userId = getCurrentUserId()
+  if (!userId) throw new Error("Must be signed in to bookmark a recipe")
+
+  const existing = bookmarksCache.find(b => b.userId === userId && b.recipeId === recipeId)
+  const previous = bookmarksCache
+
+  if (existing) {
+    bookmarksCache = bookmarksCache.filter(b => b.id !== existing.id)
+    notify()
+    void supabase.from("bookmarks").delete().eq("id", existing.id).then(({ error }) => {
+      if (error) {
+        bookmarksCache = previous
+        notify()
+        persistFailure("Failed to remove bookmark")(error)
+      }
+    })
+  } else {
+    const bookmark: Bookmark = { id: crypto.randomUUID(), userId, recipeId, createdAt: new Date().toISOString() }
+    bookmarksCache = [...bookmarksCache, bookmark]
+    notify()
+    void supabase.from("bookmarks").insert(toBookmarkRow(bookmark)).then(({ error }) => {
+      if (error) {
+        bookmarksCache = previous
+        notify()
+        persistFailure("Failed to save bookmark")(error)
+      }
+    })
+  }
+}
+
+// Memoized the same way getAllTags is (storage.ts above) — this derives
+// from two caches (bookmarks + recipes) plus the current user, so all three
+// are part of the cache key, and useSyncExternalStore needs a referentially
+// stable result when nothing relevant changed.
+let bookmarkedRecipesCache: Recipe[] | null = null
+let bookmarkedRecipesCacheKey: [Bookmark[], Recipe[], string | null] | null = null
+
+export function getBookmarkedRecipes(): Recipe[] {
+  const userId = getCurrentUserId()
+  const key = bookmarkedRecipesCacheKey
+  if (bookmarkedRecipesCache && key && key[0] === bookmarksCache && key[1] === recipesCache && key[2] === userId) {
+    return bookmarkedRecipesCache
+  }
+  bookmarkedRecipesCache = bookmarksCache
+    .filter(b => b.userId === userId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map(b => recipesById.get(b.recipeId))
+    .filter((r): r is Recipe => r != null)
+  bookmarkedRecipesCacheKey = [bookmarksCache, recipesCache, userId]
+  return bookmarkedRecipesCache
 }

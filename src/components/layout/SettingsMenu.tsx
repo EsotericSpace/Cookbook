@@ -1,4 +1,5 @@
 import { useState, useSyncExternalStore } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Icon } from "../ui/icon"
@@ -9,6 +10,7 @@ import { getDisplayName, updateDisplayName, subscribe } from "../../lib/storage"
 import { useTheme } from "../../lib/theme"
 
 export default function SettingsMenu() {
+  const navigate = useNavigate()
   const session = useSession()
   // Re-render when the display name changes (e.g. after saving an edit, or
   // arriving live from another session).
@@ -72,6 +74,19 @@ export default function SettingsMenu() {
           <Icon name={theme === "dark" ? "light_mode" : "dark_mode"} size="sm" className="opacity-50" />
           {theme === "dark" ? "Light mode" : "Dark mode"}
         </button>
+
+        {session && (
+          <PopoverClose asChild>
+            <button
+              type="button"
+              onClick={() => navigate("/profile")}
+              className="flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-sm hover:bg-muted"
+            >
+              <Icon name="person" size="sm" className="opacity-50" />
+              Profile
+            </button>
+          </PopoverClose>
+        )}
 
         {session && (
           <PopoverClose asChild>

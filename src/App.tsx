@@ -7,6 +7,7 @@ import RecipeListPage from "./pages/RecipeListPage"
 import RecipeDetailPage from "./pages/RecipeDetailPage"
 import AddRecipePage from "./pages/AddRecipePage"
 import ShoppingListPage from "./pages/ShoppingListPage"
+import ProfilePage from "./pages/ProfilePage"
 import { Toaster } from "./components/ui/sonner"
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="/recipe/:id" element={<RecipeDetailPage />} />
               <Route path="/add" element={<AddRecipePage />} />
               <Route path="/shopping/:id" element={<ShoppingListPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Routes>
           ) : (
             <div className="flex items-center justify-center py-24">

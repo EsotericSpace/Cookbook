@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
 } from "../ui/dropdown-menu"
 import RecipeForm from "./RecipeForm"
+import BookmarkButton from "./BookmarkButton"
 import { cn } from "../../lib/utils"
 import type { Recipe, TagCategory } from "../../lib/types"
 import {
@@ -131,6 +132,7 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
           Back to recipes
         </Button>
         <div className="flex gap-2">
+          {session && <BookmarkButton recipeId={recipe.id} />}
           {session && (() => {
             const lists = getShoppingLists()
             if (lists.length <= 1) {

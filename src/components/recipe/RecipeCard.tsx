@@ -7,6 +7,8 @@ import { getHeaderColors, mealGradientStyle, parseMinutes, formatTime } from "..
 import { getTagColor } from "../../lib/storage"
 import { useFitText } from "../../lib/useFitText"
 import { useExclusivePopover } from "../../lib/useExclusivePopover"
+import { useSession } from "../../lib/auth"
+import BookmarkButton from "./BookmarkButton"
 import type { Recipe } from "../../lib/types"
 
 interface RecipeCardProps {
@@ -24,6 +26,7 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
   const [imageError, setImageError] = useState(false)
   const showImage = !!recipe.imageUrl && !imageError
   const [tagsOpen, setTagsOpen] = useExclusivePopover()
+  const session = useSession()
   const tagsOpenedAtRef = useRef(0)
 
   // Opening a second card's tag popover while another is already open makes
@@ -79,6 +82,7 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
             style={gradientStyle}
           />
         )}
+        {session && <BookmarkButton recipeId={recipe.id} variant="overlay" />}
       </div>
 
       {/* Body — remaining 1/4 of the card */}
