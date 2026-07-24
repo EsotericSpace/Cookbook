@@ -32,6 +32,18 @@ export function getHeaderColors(colorKey: string): PaletteEntry {
   return COLOR_PALETTE[resolveColorKey(colorKey)]
 }
 
+// Fallback colors for the standard meal occasions, used until a tag_registry
+// color has been assigned (e.g. the very first recipe tagged with a given
+// meal value). Anything outside this set (custom meal tags) falls back
+// further to "stone" via resolveColorKey.
+const MEAL_FALLBACK_COLORS: Record<string, string> = {
+  breakfast: "amber", lunch: "teal", dinner: "orange", dessert: "purple", snack: "pink",
+}
+
+export function mealColorKey(value: string, registryColorKey: string | null): string {
+  return registryColorKey ?? MEAL_FALLBACK_COLORS[value.toLowerCase()] ?? "stone"
+}
+
 // Gradient stops reference CSS custom properties (see index.css) so the
 // gradient stays bright/saturated and repaints for the active theme.
 export function mealGradientStyle(colorKeys: string[]): React.CSSProperties | undefined {

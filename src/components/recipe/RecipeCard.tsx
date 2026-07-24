@@ -3,7 +3,7 @@ import { Badge, badgeVariants, tagCategoryColor } from "../ui/badge"
 import { Icon } from "../ui/icon"
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover"
 import { cn } from "../../lib/utils"
-import { getHeaderColors, mealGradientStyle, parseMinutes, formatTime } from "../../lib/colors"
+import { getHeaderColors, mealGradientStyle, mealColorKey, parseMinutes, formatTime } from "../../lib/colors"
 import { getTagColor } from "../../lib/storage"
 import { useFitText } from "../../lib/useFitText"
 import { useExclusivePopover } from "../../lib/useExclusivePopover"
@@ -41,12 +41,7 @@ export default function RecipeCard({ recipe, onClick }: RecipeCardProps) {
 
   const mealTags = recipe.tags.filter(t => t.category === "meal")
   const mealValues = mealTags.map(t => t.value)
-  const FALLBACK_COLORS: Record<string, string> = {
-    breakfast: "amber", lunch: "teal", dinner: "orange", dessert: "purple", snack: "pink",
-  }
-  const colorKeys = mealValues.map(v =>
-    getTagColor("meal", v) ?? FALLBACK_COLORS[v.toLowerCase()] ?? "stone"
-  )
+  const colorKeys = mealValues.map(v => mealColorKey(v, getTagColor("meal", v)))
   const header = getHeaderColors(colorKeys[0])
   const gradientStyle = mealGradientStyle(colorKeys)
 

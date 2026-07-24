@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { Input } from "../ui/input"
+import { useNavigate } from "react-router-dom"
 import { Button } from "../ui/button"
 import { Icon } from "../ui/icon"
 import {
@@ -17,27 +15,6 @@ import LoginButton from "./LoginButton"
 export default function Navbar() {
   const navigate = useNavigate()
   const session = useSession()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [inputValue, setInputValue] = useState(searchParams.get("q") ?? "")
-
-  // Debounce search input -> URL param
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams)
-      if (inputValue.trim()) {
-        params.set("q", inputValue)
-      } else {
-        params.delete("q")
-      }
-      setSearchParams(params, { replace: true })
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [inputValue])
-
-  // Sync input if URL changes externally
-  useEffect(() => {
-    setInputValue(searchParams.get("q") ?? "")
-  }, [searchParams.get("q")])
 
   function handleNewShoppingList() {
     const name = `Shopping list — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
@@ -56,15 +33,7 @@ export default function Navbar() {
           Cookbook
         </a>
 
-        <div className="flex-1 max-w-md mx-auto relative">
-          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-9"
-            placeholder="Search recipes or list ingredients..."
-            value={inputValue}
-            onChange={e => setInputValue(e.target.value)}
-          />
-        </div>
+        <div className="flex-1" />
 
         <div className="shrink-0 flex items-center gap-2">
           <SettingsMenu />
