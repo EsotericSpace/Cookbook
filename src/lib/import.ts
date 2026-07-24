@@ -208,9 +208,17 @@ function buildStepSections(instructions: unknown[]): StepSection[] {
   return sections
 }
 
+// schema.org allows recipeIngredient/recipeInstructions to be a single value
+// instead of a list (e.g. a lone HowToStep object for a one-step recipe) —
+// normalize to an array so buildIngredientSections/buildStepSections always
+// get something iterable.
+function ensureArray(v: unknown): unknown[] {
+  return Array.isArray(v) ? v : v ? [v] : []
+}
+
 function schemaToRecipe(s: Record<string, unknown>): Partial<Recipe> {
-  const ingredients = buildIngredientSections((s.recipeIngredient as string[]) ?? [])
-  const steps = buildStepSections((s.recipeInstructions as unknown[]) ?? [])
+  const ingredients = buildIngredientSections(ensureArray(s.recipeIngredient) as string[])
+  const steps = buildStepSections(ensureArray(s.recipeInstructions))
 
   const tags: Tag[] = []
   const addTag = (category: Tag["category"], value: unknown) => {
