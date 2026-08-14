@@ -22,6 +22,8 @@ import {
 } from "../ui/dropdown-menu"
 import RecipeForm from "./RecipeForm"
 import BookmarkButton from "./BookmarkButton"
+import NutritionFacts from "./NutritionFacts"
+import { analyzeAndSaveNutrition } from "../../lib/nutrition"
 import { cn } from "../../lib/utils"
 import type { Recipe, TagCategory } from "../../lib/types"
 import {
@@ -98,6 +100,7 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
 
   function handleSave(updates: Omit<Recipe, "id" | "userId" | "createdAt" | "updatedAt">) {
     onUpdate(updates)
+    void analyzeAndSaveNutrition({ ...recipe, ...updates })
     setEditing(false)
   }
 
@@ -129,7 +132,7 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
           className="px-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
         >
           <Icon name="chevron_left" />
-          Back to recipes
+          <span className="hidden sm:inline">Back to recipes</span>
         </Button>
         <div className="flex gap-2">
           {session && <BookmarkButton recipeId={recipe.id} />}
@@ -137,18 +140,24 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
             const lists = getShoppingLists()
             if (lists.length <= 1) {
               return (
-                <Button variant="outline" size="sm" onClick={() => handleAddToShoppingList()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-2 sm:px-3"
+                  onClick={() => handleAddToShoppingList()}
+                  aria-label="Add to shopping list"
+                >
                   <Icon name="shopping_cart" />
-                  Add to list
+                  <span className="hidden sm:inline">Add to list</span>
                 </Button>
               )
             }
             return (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="px-2 sm:px-3" aria-label="Add to shopping list">
                     <Icon name="shopping_cart" />
-                    Add to list
+                    <span className="hidden sm:inline">Add to list</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -167,11 +176,25 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
           })()}
           {isOwner && (
             <>
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-                Edit
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2 sm:px-3"
+                onClick={() => setEditing(true)}
+                aria-label="Edit recipe"
+              >
+                <Icon name="edit" />
+                <span className="hidden sm:inline">Edit</span>
               </Button>
-              <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-                Delete
+              <Button
+                variant="destructive"
+                size="sm"
+                className="px-2 sm:px-3"
+                onClick={() => setDeleteOpen(true)}
+                aria-label="Delete recipe"
+              >
+                <Icon name="delete" />
+                <span className="hidden sm:inline">Delete</span>
               </Button>
             </>
           )}
@@ -317,6 +340,8 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
           )}
         </div>
       )}
+
+      <NutritionFacts recipe={recipe} />
 
       {/* Notes */}
       {recipe.notes && (

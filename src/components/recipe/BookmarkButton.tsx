@@ -47,9 +47,15 @@ export default function BookmarkButton({ recipeId, variant = "inline" }: Bookmar
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleClick}>
+    <Button
+      variant="outline"
+      size="sm"
+      className="px-2 sm:px-3"
+      onClick={handleClick}
+      aria-label={bookmarked ? "Remove bookmark" : "Bookmark recipe"}
+    >
       {icon}
-      {bookmarked ? "Bookmarked" : "Bookmark"}
+      <span className="hidden sm:inline">{bookmarked ? "Bookmarked" : "Bookmark"}</span>
     </Button>
   )
 }
