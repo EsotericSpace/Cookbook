@@ -28,9 +28,10 @@ export default function Navbar() {
         <a
           href="/"
           onClick={(e) => { e.preventDefault(); navigate("/") }}
-          className="text-xl font-bold text-primary shrink-0 hover:opacity-80 transition-opacity"
+          className="text-2xl font-bold uppercase text-primary shrink-0 hover:opacity-80 transition-opacity"
+          style={{ fontFamily: "Fredoka, sans-serif" }}
         >
-          Cookbook
+          Cookadoo
         </a>
 
         <div className="flex-1" />
