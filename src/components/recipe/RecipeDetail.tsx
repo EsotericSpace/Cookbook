@@ -22,8 +22,6 @@ import {
 } from "../ui/dropdown-menu"
 import RecipeForm from "./RecipeForm"
 import BookmarkButton from "./BookmarkButton"
-import NutritionFacts from "./NutritionFacts"
-import { analyzeAndSaveNutrition } from "../../lib/nutrition"
 import { cn } from "../../lib/utils"
 import type { Recipe, TagCategory } from "../../lib/types"
 import {
@@ -100,7 +98,6 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
 
   function handleSave(updates: Omit<Recipe, "id" | "userId" | "createdAt" | "updatedAt">) {
     onUpdate(updates)
-    void analyzeAndSaveNutrition({ ...recipe, ...updates })
     setEditing(false)
   }
 
@@ -340,8 +337,6 @@ export default function RecipeDetail({ recipe, onUpdate, onDelete, onBack }: Rec
           )}
         </div>
       )}
-
-      <NutritionFacts recipe={recipe} />
 
       {/* Notes */}
       {recipe.notes && (
